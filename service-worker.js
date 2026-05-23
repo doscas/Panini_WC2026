@@ -1,5 +1,5 @@
 // Panini WC 2026 Tracker Service Worker
-const CACHE_NAME = 'panini-wc26-v20-manual-firebase';
+const CACHE_NAME = 'panini-wc26-v21-manual-firebase-fr';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,7 +7,9 @@ const APP_SHELL = [
   './firebase-config.js',
   './service-worker.js',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './flags/gb-sct.svg',
+  './flags/gb-eng.svg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#0f0f1f",
   "theme_color": "#1a1a2e",
-  "description": "Manual-first sticker tracker with duplicates, reservations, and smart trade suggestions.",
+  "description": "Manual-first sticker tracker with duplicates, reservations, French/English UI, and smart trade suggestions.",
   "icons": [
     {
       "src": "./icon-192.png",
