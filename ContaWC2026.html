@@ -4,178 +4,270 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>⚽ Panini WC 2026 Tracker</title>
-
 <meta name="theme-color" content="#1a1a2e" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-192.png" />
-
-<!-- OCR -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
 <style>
-
-/* -------- GLOBAL -------- */
-:root{
-  --gold:#D4AF37;
-  --dark:#1a1a2e;
-  --blue:#1565C0;
-  --green:#4CAF50;
-  --orange:#FF9800;
-  --red:#E53935;
-  --bg:#f4f6fa;
-  --card:#fff;
-  --text:#222;
-  --muted:#7b7b8b;
-}
-
+:root{--gold:#D4AF37;--dark:#1a1a2e;--blue:#1565C0;--green:#4CAF50;--orange:#FF9800;--red:#E53935;--bg:#f4f6fa;--card:#fff;--text:#222;--muted:#7b7b8b}
 *{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+.header{background:linear-gradient(135deg,var(--dark),#16213e);color:#fff;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.28);position:relative}
+.header h1{font-size:18px;font-weight:900}
+.header h1 span{color:var(--gold)}
+.header .subtitle{font-size:11px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.progress-header{margin-top:8px;background:rgba(255,255,255,.15);border-radius:10px;height:8px;overflow:hidden}
+.progress-header-fill{height:100%;background:linear-gradient(90deg,var(--gold),#FFD700);border-radius:10px;transition:width .35s ease}
+.progress-header-text{font-size:10px;color:rgba(255,255,255,.78);margin-top:3px}
+.version-badge{position:absolute;top:10px;right:12px;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.6);color:var(--gold);font-weight:1100;font-size:clamp(10px,2.2vw,14px);line-height:1;backdrop-filter:blur(6px)}
+@media (max-width:360px){.version-badge{top:8px;right:10px;padding:3px 7px}}
 
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  padding-bottom:90px;
-}
+.install-banner{display:none;max-width:440px;margin:10px auto 0;padding:10px 12px;border-radius:14px;background:linear-gradient(135deg,#0f0f1f,#16213e);color:#fff;box-shadow:0 8px 22px rgba(0,0,0,.22)}
+.install-banner.show{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.install-banner button{border:none;border-radius:12px;padding:10px 12px;font-weight:1000;background:var(--gold);color:var(--dark);cursor:pointer}
 
-/* -------- HEADER -------- */
-.header{
-  background:linear-gradient(135deg,var(--dark),#16213e);
-  color:#fff;
-  padding:14px;
-  text-align:center;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
+.tabs{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--dark);z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,.28)}
+.tab{flex:1;padding:10px 0 8px;text-align:center;cursor:pointer;color:rgba(255,255,255,.55);transition:all .2s;border-top:3px solid transparent}
+.tab.active{color:var(--gold);border-top-color:var(--gold)}
+.tab-icon{font-size:22px;display:block}
+.tab-label{font-size:10px;margin-top:2px;font-weight:800}
 
-.header h1{
-  font-size:18px;
-  font-weight:900;
-}
+.page{display:none;padding:16px}
+.page.active{display:block}
 
-.header h1 span{
-  color:var(--gold);
-}
+.camera-wrap{max-width:440px;margin:0 auto}
+.camera-container{position:relative;width:100%;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
+video{width:100%;height:100%;object-fit:cover}
+.scan-overlay{position:absolute;inset:0;pointer-events:none}
+.scan-guide{position:absolute;top:9%;right:4.5%;width:42%;height:28%;border:2px solid var(--gold);border-radius:10px;background:rgba(212,175,55,.10);box-shadow:0 0 0 9999px rgba(0,0,0,.16) inset}
 
-.subtitle{
-  font-size:11px;
-  color:var(--gold);
-}
+.controls{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:1000}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:#f1f5ff;font-weight:900;font-size:12px;color:var(--blue)}
+.switch{width:46px;height:26px;border-radius:13px;background:#ddd;position:relative;cursor:pointer;transition:background .2s;flex:0 0 auto}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.switch.on{background:var(--green)}
+.switch.on::after{transform:translateX(20px)}
 
-/* VERSION BADGE */
-.version-badge{
-  position:absolute;
-  top:8px;
-  right:10px;
-  background:rgba(0,0,0,0.3);
-  padding:4px 8px;
-  border-radius:999px;
-  color:var(--gold);
-  font-weight:900;
-  font-size:clamp(10px,2vw,14px);
-}
+.scan-status{text-align:center;margin-top:10px;font-size:13px;color:var(--muted);min-height:24px;font-weight:800}
+.small-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-weight:900}
 
-/* -------- CAMERA -------- */
-.camera-container{
-  width:100%;
-  border-radius:16px;
-  overflow:hidden;
-  background:#000;
-  aspect-ratio:4/3;
-  position:relative;
-}
+.manual{margin-top:14px;background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.manual h3{font-size:14px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;font-weight:1000}
+.country-search-wrap{position:relative;display:flex;align-items:center}
+.country-search{width:100%;padding:12px 44px 12px 14px;border:2px solid #e0e0e0;border-radius:12px;font-size:15px;outline:none;transition:border .2s;font-weight:900}
+.country-search:focus{border-color:var(--gold)}
+.clear-team-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;border-radius:10px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#f0f0f0;color:#444;font-weight:1200;cursor:pointer}
+.clear-team-btn:hover{background:#e6e6e6}
 
-video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+.country-list{display:none;max-height:210px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:12px;margin-top:4px;background:#fff}
+.country-list.show{display:block}
+.country-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;border-bottom:1px solid #f0f0f0;font-weight:900}
+.country-item:hover{background:#f0f7ff}
+.country-item .code{margin-left:auto;color:var(--blue);font-weight:1000;font-size:12px}
+.selected-team{display:none;margin-top:10px;padding:10px 14px;background:linear-gradient(135deg,#e3f2fd,#f3e5f5);border-radius:12px;font-size:14px;font-weight:1000;text-align:center}
+.selected-team.show{display:block}
+.number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+.num-btn{padding:12px 0;text-align:center;background:#f0f0f0;border:2px solid transparent;border-radius:10px;font-weight:1000;font-size:15px;cursor:pointer;transition:all .12s}
+.num-btn.owned{background:#e8f5e9;border-color:var(--green);color:var(--green)}
 
-/* Scan guide */
-.scan-guide{
-  position:absolute;
-  top:9%;
-  right:4.5%;
-  width:42%;
-  height:28%;
-  border:2px solid var(--gold);
-  border-radius:10px;
-  background:rgba(212,175,55,.1);
-}
-
-/* -------- STATUS -------- */
-.scan-status{
-  margin-top:10px;
-  text-align:center;
-  font-size:13px;
-  font-weight:700;
-  color:var(--muted);
-}
-
-/* -------- BUTTONS -------- */
-button{
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  font-weight:900;
-  cursor:pointer;
-}
-
-.btn-primary{
-  background:var(--blue);
-  color:#fff;
-}
-
-.btn-green{
-  background:var(--green);
-  color:#fff;
-}
-
-/* -------- TABS -------- */
-.tabs{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  display:flex;
-  background:var(--dark);
-}
-
-.tab{
-  flex:1;
-  text-align:center;
-  padding:10px;
-  color:#aaa;
-}
-
-.tab.active{
-  color:var(--gold);
-}
-
-/* -------- PAGES -------- */
-.page{ display:none; padding:16px;}
-.page.active{ display:block;}
-
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:1000;transition:all .12s}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.team-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.team-card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);cursor:pointer;transition:all .15s;border:2px solid transparent}
+.team-card.complete{border-color:var(--green);background:#f1f8e9}
+.team-top{display:flex;align-items:center;gap:8px}
+.team-flag{font-size:24px}
+.team-name{font-size:13px;font-weight:1000;line-height:1.2}
+.team-code{font-size:10px;color:var(--muted);font-weight:900}
+.team-progress-bar{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.team-progress-fill{height:100%;border-radius:3px;transition:width .35s ease}
+.team-progress-text{font-size:10px;color:var(--muted);text-align:right;margin-top:2px;font-weight:900}
 </style>
 </head>
-
 <body>
-
-<!-- HEADER -->
-<div class="header">
-  <h1>⚽ <span>Panini</span> WC 2026</h1>
-  <div class="subtitle">Scan • Track • Collect</div>
-
-  <div id="appVersion" class="version-badge">
-    v1.2.1
-  </div>
-</div>
-
-<!-- PAGE: SCAN -->
-<div id="pageScan" class="page active">
-
-  <div class="camera-container">
-    <video id="cameraFeed" autoplay playsinline muted></video>
-    <div class="scan-guide"></div>
+  <div class="header">
+    <h1>⚽ <span>Panini</span> WC 2026 Tracker</h1>
+    <div class="subtitle">Fast OCR • Multi‑device • Multi‑user</div>
+    <div class="progress-header"><div class="progress-header-fill" id="headerProgress"></div></div>
+    <div class="progress-header-text" id="headerProgressText">0 / 980 stickers</div>
+    <div id="appVersion" class="version-badge">v1.3.0</div>
+    <div style="display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <div class="user-pill" id="userPill" style="display:none">Logged in</div>
+    </div>
   </div>
 
+  <div class="install-banner" id="installBanner">
+    <div class="txt"><b>Install as an app</b><br><span style="color:rgba(255,255,255,.8)">Full‑screen + offline cache.</span></div>
+    <button onclick="promptInstall()">Install</button>
+  </div>
+
+  <div class="page active" id="pageScan">
+    <div class="camera-wrap">
+      <div class="camera-container">
+        <video id="cameraFeed" autoplay playsinline muted></video>
+        <div class="scan-overlay"><div class="scan-guide"></div></div>
+      </div>
+
+      <div class="controls">
+        <div class="card">
+          <div class="card-title">Auto‑Scan</div>
+          <div class="toggle">
+            <div class="pill">⚡ <span id="autoState">ON</span> <small id="autoHint">stabilize 2 hits</small></div>
+            <div class="switch on" id="autoSwitch" onclick="toggleAuto()"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Torch</div>
+          <div class="toggle">
+            <div class="pill">🔦 <span id="torchState">OFF</span> <small id="torchHint">if supported</small></div>
+            <div class="switch" id="torchSwitch" onclick="toggleTorch()"></div>
+          </div>
+        </div>
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">Speed & Accuracy</div>
+          <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+            <div style="font-weight:1000;font-size:12px;color:var(--muted)">Stability</div>
+            <input id="stability" type="range" min="1" max="4" value="2" style="flex:1" oninput="updateStability()" />
+            <div class="pill" id="stabilityLabel">2 hits</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:10px;justify-content:space-between">
+            <div style="font-weight:1000;font-size:12px;color:var(--muted)">Crop</div>
+            <select id="cropMode" onchange="setCropMode(this.value)" style="flex:1;padding:10px;border-radius:12px;border:2px solid #e0e0e0;font-weight:1100">
+              <option value="tight" selected>Tight (fast)</option>
+              <option value="normal">Normal</option>
+              <option value="wide">Wide (fallback)</option>
+            </select>
+            <div class="pill" id="cropLabel">Tight</div>
+          </div>
+          <div class="small-note" id="engineNote">Engine: Fast OCR. Multi-attempt: tight → normal → wide. Tip: Torch ON + hold steady.</div>
+        </div>
+      </div>
+
+      <div class="scan-status" id="scanStatus">Starting camera…</div>
+      <div class="small-note" id="debugLine"></div>
+      <canvas id="scanCanvas" style="display:none"></canvas>
+      <canvas id="cropCanvas" style="display:none"></canvas>
+
+      <div class="manual">
+        <h3>⚡ Quick Manual Entry</h3>
+        <div class="country-search-wrap">
+          <input type="text" class="country-search" id="countrySearch" placeholder="🔎 Search country or code…" autocomplete="off" />
+          <button type="button" class="clear-team-btn" onclick="clearSelectedTeam()" aria-label="Clear selected country">✕</button>
+        </div>
+        <div class="country-list" id="countryList"></div>
+        <div class="selected-team" id="selectedTeam"></div>
+        <div class="number-grid" id="numberGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="pageCollection">
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="team-grid" id="teamGrid"></div>
+  </div>
+
+  <div class="page" id="pageStats">
+    <div class="completion-banner" id="completionBanner" style="display:none"></div>
+    <div class="stat-card">
+      <h3>Overall Progress</h3>
+      <div class="big-stat" id="statPercent">0<span>%</span></div>
+      <div class="detail-progress" style="margin-top:10px;">
+        <div class="detail-progress-bar" style="height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden"><div class="detail-progress-fill" id="statProgressFill" style="height:100%;width:0%"></div></div>
+      </div>
+      <div class="stat-row" style="margin-top:16px;">
+        <div class="stat-item"><div class="stat-item-num" style="color:var(--green)" id="statOwned">0</div><div class="stat-item-label">Owned</div></div>
+        <div class="stat-item"><div class="stat-item-num" style="color:var(--red)" id="statMissing">980</div><div class="stat-item-label">Missing</div></div>
+        <div class="stat-item"><div class="stat-item-num" style="color:var(--orange)" id="statDuplicates">0</div><div class="stat-item-label">Duplicates</div></div>
+        <div class="stat-item"><div class="stat-item-num" style="color:var(--gold)" id="statTeamsComplete">0</div><div class="stat-item-label">Teams ✓</div></div>
+      </div>
+      <div class="small-note" id="cloudStatus">Cloud: not connected</div>
+    </div>
+
+    <div class="stat-card"><h3>Export / Backup</h3>
+      <button class="io-btn btn-export" onclick="exportCollectionJSON()">📤 Export Collection (JSON)</button>
+      <button class="io-btn btn-export-csv" onclick="exportCollectionCSV()">📄 Export Collection (CSV)</button>
+      <button class="io-btn btn-export-missing" onclick="exportMissingTXT()">📝 Export Missing List (TXT)</button>
+      <button class="io-btn btn-export-csv" onclick="exportMissingCSV()">📄 Export Missing (CSV)</button>
+      <button class="io-btn btn-import" onclick="document.getElementById('importFile').click()">📥 Import Collection (JSON)</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importCollection(event)" />
+    </div>
+
+    <div class="stat-card"><h3>Danger Zone</h3>
+      <button class="io-btn btn-reset" onclick="resetCollection()">🗑️ Reset My Collection</button>
+    </div>
+  </div>
+
+  <div class="detail-modal" id="detailModal">
+    <div class="detail-header">
+      <div class="detail-back" onclick="closeDetail()">←</div>
+      <div class="detail-flag" id="detailFlag"></div>
+      <div>
+        <div class="detail-name" id="detailName"></div>
+        <div class="detail-group" id="detailGroup"></div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-progress"><div class="detail-progress-bar"><div class="detail-progress-fill" id="detailProgressFill"></div></div></div>
+      <div class="detail-stats">
+        <div class="detail-stat"><div class="detail-stat-num" style="color:var(--green)" id="detailOwned">0</div><div class="detail-stat-label">Owned</div></div>
+        <div class="detail-stat"><div class="detail-stat-num" style="color:var(--red)" id="detailMissing">0</div><div class="detail-stat-label">Missing</div></div>
+        <div class="detail-stat"><div class="detail-stat-num" style="color:var(--orange)" id="detailDups">0</div><div class="detail-stat-label">Duplicates</div></div>
+      </div>
+      <div class="sticker-grid" id="detailStickerGrid"></div>
+    </div>
+  </div>
+
+  <div class="feedback-overlay" id="feedbackOverlay">
+    <div class="feedback-card" id="feedbackCard">
+      <div class="feedback-emoji" id="feedbackEmoji"></div>
+      <div class="feedback-title" id="feedbackTitle"></div>
+      <div class="feedback-sub" id="feedbackSub"></div>
+    </div>
+  </div>
+
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-box">
+      <h3>📋 Confirm Sticker</h3>
+      <div class="confirm-detected" id="confirmDetected">---</div>
+      <div class="confirm-edit">
+        <select id="confirmCountry"></select>
+        <input type="number" id="confirmNumber" min="0" max="20" placeholder="#" />
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:4px;font-weight:1000" id="confirmConfidence"></div>
+      <div class="confirm-actions">
+        <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmSticker()">✓ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-title">Sign in to sync your collection</div>
+      <div class="auth-sub">Email + password (you create it). Your collection is private to your account.</div>
+      <div class="auth-row" style="margin-top:14px">
+        <input class="auth-input" id="authEmail" placeholder="Email" autocomplete="email" />
+      </div>
+      <div class="auth-row">
+        <input class="auth-input" id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
+      </div>
+      <button class="auth-btn primary" onclick="authLogin()">Login</button>
+      <button class="auth-btn secondary" onclick="authSignup()">Create account</button>
+      <button class="auth-btn link" onclick="authResetPassword()">Forgot password?</button>
+      <div class="auth-error" id="authError"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('pageScan',this)"><span class="tab-icon">📸</span><span class="tab-label">Scan</span></div>
+    <div class="tab" onclick="switchTab('pageCollection',this)"><span class="tab-icon">📋</span><span class="tab-label">Collection</span></div>
+    <div class="tab" onclick="switchTab('pageStats',this)"><span class="tab-icon">📊</span><span class="tab-label">Stats</span></div>
+  </div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 // Panini WC 2026 Tracker Service Worker
-const CACHE_NAME = 'panini-wc26-v7-firebase';
+const CACHE_NAME = 'panini-wc26-v9-ocr-multi';
 const APP_SHELL = [
   './',
-  './index.html',
+  './ContaWC2026.html',
   './app.js',
   './firebase-config.js',
   './manifest.json',
