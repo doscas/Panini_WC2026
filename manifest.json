@@ -1,12 +1,12 @@
 {
   "name": "Panini World Cup 2026 Tracker",
   "short_name": "Panini WC26",
-  "start_url": "./ContaWC2026.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f0f1f",
   "theme_color": "#1a1a2e",
-  "description": "Fast OCR scanner + multi-user tracker for Panini FIFA World Cup 2026 stickers.",
+  "description": "ROI-based OCR scanner for Panini FIFA World Cup 2026 sticker codes.",
   "icons": [
     {
       "src": "./icon-192.png",

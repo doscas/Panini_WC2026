@@ -1,10 +1,8 @@
 // Panini WC 2026 Tracker Service Worker
-const CACHE_NAME = 'panini-wc26-v9-ocr-multi';
+const CACHE_NAME = 'panini-wc26-v10-roi';
 const APP_SHELL = [
   './',
-  './ContaWC2026.html',
-  './app.js',
-  './firebase-config.js',
+  './index.html',
   './manifest.json',
   './service-worker.js',
   './icon-192.png',
@@ -29,12 +27,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  const isAppShell = url.origin === self.location.origin;
-  if (!isAppShell) {
-    event.respondWith(fetch(req).catch(() => caches.match(req)));
-    return;
-  }
   event.respondWith(
     caches.match(req).then((cached) => cached || fetch(req).then((res) => {
       const clone = res.clone();
