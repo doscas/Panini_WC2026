@@ -1,0 +1,22 @@
+{
+  "name": "Panini World Cup 2026 Tracker",
+  "short_name": "Panini WC26",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f0f1f",
+  "theme_color": "#1a1a2e",
+  "description": "Scan and track your Panini FIFA World Cup 2026 stickers (codes: 3-letter team + 1-20).",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
