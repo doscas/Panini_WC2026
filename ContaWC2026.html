@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>⚽ Panini WC 2026 Tracker</title>
+
+<meta name="theme-color" content="#1a1a2e" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+
+<!-- OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+
+/* -------- GLOBAL -------- */
+:root{
+  --gold:#D4AF37;
+  --dark:#1a1a2e;
+  --blue:#1565C0;
+  --green:#4CAF50;
+  --orange:#FF9800;
+  --red:#E53935;
+  --bg:#f4f6fa;
+  --card:#fff;
+  --text:#222;
+  --muted:#7b7b8b;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding-bottom:90px;
+}
+
+/* -------- HEADER -------- */
+.header{
+  background:linear-gradient(135deg,var(--dark),#16213e);
+  color:#fff;
+  padding:14px;
+  text-align:center;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+
+.header h1{
+  font-size:18px;
+  font-weight:900;
+}
+
+.header h1 span{
+  color:var(--gold);
+}
+
+.subtitle{
+  font-size:11px;
+  color:var(--gold);
+}
+
+/* VERSION BADGE */
+.version-badge{
+  position:absolute;
+  top:8px;
+  right:10px;
+  background:rgba(0,0,0,0.3);
+  padding:4px 8px;
+  border-radius:999px;
+  color:var(--gold);
+  font-weight:900;
+  font-size:clamp(10px,2vw,14px);
+}
+
+/* -------- CAMERA -------- */
+.camera-container{
+  width:100%;
+  border-radius:16px;
+  overflow:hidden;
+  background:#000;
+  aspect-ratio:4/3;
+  position:relative;
+}
+
+video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* Scan guide */
+.scan-guide{
+  position:absolute;
+  top:9%;
+  right:4.5%;
+  width:42%;
+  height:28%;
+  border:2px solid var(--gold);
+  border-radius:10px;
+  background:rgba(212,175,55,.1);
+}
+
+/* -------- STATUS -------- */
+.scan-status{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+}
+
+/* -------- BUTTONS -------- */
+button{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.btn-primary{
+  background:var(--blue);
+  color:#fff;
+}
+
+.btn-green{
+  background:var(--green);
+  color:#fff;
+}
+
+/* -------- TABS -------- */
+.tabs{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  background:var(--dark);
+}
+
+.tab{
+  flex:1;
+  text-align:center;
+  padding:10px;
+  color:#aaa;
+}
+
+.tab.active{
+  color:var(--gold);
+}
+
+/* -------- PAGES -------- */
+.page{ display:none; padding:16px;}
+.page.active{ display:block;}
+
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>⚽ <span>Panini</span> WC 2026</h1>
+  <div class="subtitle">Scan • Track • Collect</div>
+
+  <div id="appVersion" class="version-badge">
+    v1.2.1
+  </div>
+</div>
+
+<!-- PAGE: SCAN -->
+<div id="pageScan" class="page active">
+
+  <div class="camera-container">
+    <video id="cameraFeed" autoplay playsinline muted></video>
+    <div class="scan-guide"></div>
+  </div>
+
