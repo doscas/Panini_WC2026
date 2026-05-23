@@ -3,21 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>⚡ Panini WC 2026 Tracker (Ultra‑Fast)</title>
+<title>⚽ Panini WC 2026 Tracker</title>
 <meta name="theme-color" content="#1a1a2e" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-192.png" />
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
-:root{
-  --gold:#D4AF37; --dark:#1a1a2e; --darker:#0f0f1f;
-  --blue:#1565C0; --accent:#00BCD4;
-  --green:#4CAF50; --orange:#FF9800; --red:#E53935;
-  --bg:#f4f6fa; --card:#fff; --text:#222; --muted:#7b7b8b;
-}
+:root{--gold:#D4AF37;--dark:#1a1a2e;--darker:#0f0f1f;--blue:#1565C0;--accent:#00BCD4;--green:#4CAF50;--orange:#FF9800;--red:#E53935;--bg:#f4f6fa;--card:#fff;--text:#222;--muted:#7b7b8b}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
 .header{background:linear-gradient(135deg,var(--dark),#16213e);color:#fff;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.28)}
 .header h1{font-size:18px;font-weight:900}
 .header h1 span{color:var(--gold)}
@@ -60,6 +56,7 @@ video{width:100%;height:100%;object-fit:cover}
 .switch.on::after{transform:translateX(20px)}
 
 .scan-status{text-align:center;margin-top:10px;font-size:13px;color:var(--muted);min-height:24px;font-weight:800}
+.small-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-weight:900}
 
 .manual{margin-top:14px;background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .manual h3{font-size:14px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;font-weight:1000}
@@ -130,12 +127,15 @@ video{width:100%;height:100%;object-fit:cover}
 .stat-item-num.red{color:var(--red)}
 .stat-item-num.orange{color:var(--orange)}
 .stat-item-num.gold{color:var(--gold)}
+
 .io-btn{display:block;width:100%;padding:14px;margin-bottom:8px;border:none;border-radius:12px;font-weight:1100;font-size:14px;cursor:pointer;transition:all .12s}
 .io-btn:hover{transform:translateY(-1px)}
 .btn-export{background:var(--blue);color:#fff}
 .btn-export-missing{background:var(--orange);color:#fff}
+.btn-export-csv{background:#263238;color:#fff}
 .btn-import{background:#e0e0e0;color:var(--text)}
-.btn-reset{background:var(--red);color:#fff;margin-top:16px;opacity:.7}
+.btn-reset{background:var(--red);color:#fff;margin-top:16px;opacity:.8}
+
 .completion-banner{display:none;text-align:center;padding:20px;background:linear-gradient(135deg,#FFD700,#FFC107);border-radius:16px;margin-bottom:16px}
 .completion-banner.show{display:block}
 .completion-banner .trophy{font-size:50px}
@@ -163,19 +163,37 @@ video{width:100%;height:100%;object-fit:cover}
 .btn-confirm{background:var(--green);color:#fff}
 .btn-cancel{background:#e0e0e0;color:var(--text)}
 
-.small-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-weight:900}
+/* Auth modal */
+.auth-overlay{display:none;position:fixed;inset:0;z-index:300;background:linear-gradient(135deg,rgba(15,15,31,.92),rgba(26,33,62,.92));padding:16px}
+.auth-overlay.show{display:flex;align-items:center;justify-content:center}
+.auth-card{width:100%;max-width:420px;background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.auth-title{font-weight:1200;font-size:18px;color:var(--dark);text-align:center}
+.auth-sub{font-weight:900;font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.auth-row{display:flex;gap:8px;margin-top:12px}
+.auth-input{flex:1;width:100%;padding:12px 14px;border:2px solid #e0e0e0;border-radius:12px;font-size:14px;font-weight:900;outline:none}
+.auth-input:focus{border-color:var(--gold)}
+.auth-btn{width:100%;padding:12px 14px;border:none;border-radius:12px;font-weight:1100;font-size:14px;cursor:pointer;margin-top:10px}
+.auth-btn.primary{background:var(--blue);color:#fff}
+.auth-btn.secondary{background:#e0e0e0}
+.auth-btn.link{background:transparent;color:var(--blue);text-decoration:underline;margin-top:6px}
+.auth-error{margin-top:10px;color:var(--red);font-weight:900;font-size:12px;min-height:16px;text-align:center}
+.user-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;margin-top:10px;color:#fff;font-weight:900;font-size:12px}
+.user-pill button{border:none;border-radius:999px;background:rgba(212,175,55,.9);color:var(--dark);font-weight:1100;padding:6px 10px;cursor:pointer}
 </style>
 </head>
 <body>
   <div class="header">
-    <h1>⚡ <span>Panini</span> WC 2026 Tracker</h1>
-    <div class="subtitle">Ultra‑fast scan • Track • Trade</div>
+    <h1>⚽ <span>Panini</span> WC 2026 Tracker</h1>
+    <div class="subtitle">Fast OCR • Multi‑device • Multi‑user</div>
     <div class="progress-header"><div class="progress-header-fill" id="headerProgress"></div></div>
     <div class="progress-header-text" id="headerProgressText">0 / 980 stickers</div>
+    <div style="display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <div class="user-pill" id="userPill" style="display:none">Logged in</div>
+    </div>
   </div>
 
   <div class="install-banner" id="installBanner">
-    <div class="txt"><b>Install as an app</b><br><span style="color:rgba(255,255,255,.8)">Full‑screen + faster + offline.</span></div>
+    <div class="txt"><b>Install as an app</b><br><span style="color:rgba(255,255,255,.8)">Full‑screen + offline cache.</span></div>
     <button onclick="promptInstall()">Install</button>
   </div>
 
@@ -207,23 +225,25 @@ video{width:100%;height:100%;object-fit:cover}
           <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
             <div style="font-weight:1000;font-size:12px;color:var(--muted)">Stability</div>
             <input id="stability" type="range" min="1" max="4" value="2" style="flex:1" oninput="updateStability()" />
-            <div class="pill" style="min-width:86px;justify-content:center" id="stabilityLabel">2 hits</div>
+            <div class="pill" id="stabilityLabel">2 hits</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;margin-top:10px;justify-content:space-between">
             <div style="font-weight:1000;font-size:12px;color:var(--muted)">Crop</div>
             <select id="cropMode" onchange="setCropMode(this.value)" style="flex:1;padding:10px;border-radius:12px;border:2px solid #e0e0e0;font-weight:1100">
-              <option value="tight" selected>Tight (fastest)</option>
+              <option value="tight" selected>Tight (fast)</option>
               <option value="normal">Normal</option>
               <option value="wide">Wide (fallback)</option>
             </select>
-            <div class="pill" style="min-width:86px;justify-content:center" id="cropLabel">Tight</div>
+            <div class="pill" id="cropLabel">Tight</div>
           </div>
-          <div class="small-note" id="engineNote">Engine: On‑device TextDetector (fast). If unavailable, use manual entry.</div>
+          <div class="small-note" id="engineNote">Engine: Fast OCR. Tip: Torch ON + hold steady.</div>
         </div>
       </div>
 
       <div class="scan-status" id="scanStatus">Starting camera…</div>
+      <div class="small-note" id="debugLine"></div>
       <canvas id="scanCanvas" style="display:none"></canvas>
+      <canvas id="cropCanvas" style="display:none"></canvas>
 
       <div class="manual">
         <h3>⚡ Quick Manual Entry</h3>
@@ -261,25 +281,20 @@ video{width:100%;height:100%;object-fit:cover}
         <div class="stat-item"><div class="stat-item-num orange" id="statDuplicates">0</div><div class="stat-item-label">Duplicates</div></div>
         <div class="stat-item"><div class="stat-item-num gold" id="statTeamsComplete">0</div><div class="stat-item-label">Teams ✓</div></div>
       </div>
+      <div class="small-note" id="cloudStatus">Cloud: not connected</div>
     </div>
 
-    <div class="stat-card">
-      <h3>Top Teams (Most Stickers)</h3>
-      <div id="topTeams"></div>
-    </div>
-
-    <div class="stat-card">
-      <h3>Needing Most Stickers</h3>
-      <div id="bottomTeams"></div>
-    </div>
-
-    <div class="stat-card">
-      <h3>Manage Collection</h3>
-      <button class="io-btn btn-export" onclick="exportCollection()">📤 Export Collection (JSON)</button>
-      <button class="io-btn btn-export-missing" onclick="exportMissing()">📝 Export Missing List (Trading)</button>
+    <div class="stat-card"><h3>Export / Backup</h3>
+      <button class="io-btn btn-export" onclick="exportCollectionJSON()">📤 Export Collection (JSON)</button>
+      <button class="io-btn btn-export-csv" onclick="exportCollectionCSV()">📄 Export Collection (CSV)</button>
+      <button class="io-btn btn-export-missing" onclick="exportMissingTXT()">📝 Export Missing List (TXT)</button>
+      <button class="io-btn btn-export-csv" onclick="exportMissingCSV()">📄 Export Missing (CSV)</button>
       <button class="io-btn btn-import" onclick="document.getElementById('importFile').click()">📥 Import Collection (JSON)</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importCollection(event)" />
-      <button class="io-btn btn-reset" onclick="resetCollection()">🗑️ Reset Collection</button>
+    </div>
+
+    <div class="stat-card"><h3>Danger Zone</h3>
+      <button class="io-btn btn-reset" onclick="resetCollection()">🗑️ Reset My Collection</button>
     </div>
   </div>
 
@@ -294,9 +309,7 @@ video{width:100%;height:100%;object-fit:cover}
       </div>
     </div>
     <div class="detail-body">
-      <div class="detail-progress">
-        <div class="detail-progress-bar"><div class="detail-progress-fill" id="detailProgressFill"></div></div>
-      </div>
+      <div class="detail-progress"><div class="detail-progress-bar"><div class="detail-progress-fill" id="detailProgressFill"></div></div></div>
       <div class="detail-stats">
         <div class="detail-stat"><div class="detail-stat-num" style="color:var(--green)" id="detailOwned">0</div><div class="detail-stat-label">Owned</div></div>
         <div class="detail-stat"><div class="detail-stat-num" style="color:var(--red)" id="detailMissing">0</div><div class="detail-stat-label">Missing</div></div>
@@ -336,6 +349,25 @@ video{width:100%;height:100%;object-fit:cover}
     </div>
   </div>
 
+  <!-- Auth Overlay -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-title">Sign in to sync your collection</div>
+      <div class="auth-sub">Email + password (you create it). Your collection is private to your account.</div>
+      <div class="auth-row" style="margin-top:14px">
+        <input class="auth-input" id="authEmail" placeholder="Email" autocomplete="email" />
+      </div>
+      <div class="auth-row">
+        <input class="auth-input" id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
+      </div>
+      <button class="auth-btn primary" onclick="authLogin()">Login</button>
+      <button class="auth-btn secondary" onclick="authSignup()">Create account</button>
+      <button class="auth-btn link" onclick="authResetPassword()">Forgot password?</button>
+      <div class="auth-error" id="authError"></div>
+      <div class="small-note" style="margin-top:10px">If login fails with “unauthorized-domain”, add your site domain to Firebase Authorized Domains.</div>
+    </div>
+  </div>
+
   <!-- Tab Bar -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('pageScan',this)"><span class="tab-icon">📸</span><span class="tab-label">Scan</span></div>
@@ -343,678 +375,6 @@ video{width:100%;height:100%;object-fit:cover}
     <div class="tab" onclick="switchTab('pageStats',this)"><span class="tab-icon">📊</span><span class="tab-label">Stats</span></div>
   </div>
 
-<script>
-// ─────────────────────────────────────────
-// Teams + constants
-// ─────────────────────────────────────────
-const TEAMS = [
-  {code:'MEX',name:'Mexico',flag:'🇲🇽',group:'A'},{code:'KOR',name:'South Korea',flag:'🇰🇷',group:'A'},{code:'RSA',name:'South Africa',flag:'🇿🇦',group:'A'},{code:'CZE',name:'Czechia',flag:'🇨🇿',group:'A'},
-  {code:'CAN',name:'Canada',flag:'🇨🇦',group:'B'},{code:'SUI',name:'Switzerland',flag:'🇨🇭',group:'B'},{code:'QAT',name:'Qatar',flag:'🇶🇦',group:'B'},{code:'BIH',name:'Bosnia & Herzegovina',flag:'🇧🇦',group:'B'},
-  {code:'BRA',name:'Brazil',flag:'🇧🇷',group:'C'},{code:'MAR',name:'Morocco',flag:'🇲🇦',group:'C'},{code:'SCO',name:'Scotland',flag:'🏴',group:'C'},{code:'HAI',name:'Haiti',flag:'🇭🇹',group:'C'},
-  {code:'USA',name:'United States',flag:'🇺🇸',group:'D'},{code:'PAR',name:'Paraguay',flag:'🇵🇾',group:'D'},{code:'AUS',name:'Australia',flag:'🇦🇺',group:'D'},{code:'TUR',name:'Türkiye',flag:'🇹🇷',group:'D'},
-  {code:'GER',name:'Germany',flag:'🇩🇪',group:'E'},{code:'ECU',name:'Ecuador',flag:'🇪🇨',group:'E'},{code:'CIV',name:"Côte d'Ivoire",flag:'🇨🇮',group:'E'},{code:'CUW',name:'Curaçao',flag:'🇨🇼',group:'E'},
-  {code:'NED',name:'Netherlands',flag:'🇳🇱',group:'F'},{code:'JPN',name:'Japan',flag:'🇯🇵',group:'F'},{code:'TUN',name:'Tunisia',flag:'🇹🇳',group:'F'},{code:'SWE',name:'Sweden',flag:'🇸🇪',group:'F'},
-  {code:'BEL',name:'Belgium',flag:'🇧🇪',group:'G'},{code:'IRN',name:'Iran',flag:'🇮🇷',group:'G'},{code:'EGY',name:'Egypt',flag:'🇪🇬',group:'G'},{code:'NZL',name:'New Zealand',flag:'🇳🇿',group:'G'},
-  {code:'ESP',name:'Spain',flag:'🇪🇸',group:'H'},{code:'URU',name:'Uruguay',flag:'🇺🇾',group:'H'},{code:'KSA',name:'Saudi Arabia',flag:'🇸🇦',group:'H'},{code:'CPV',name:'Cape Verde',flag:'🇨🇻',group:'H'},
-  {code:'FRA',name:'France',flag:'🇫🇷',group:'I'},{code:'SEN',name:'Senegal',flag:'🇸🇳',group:'I'},{code:'NOR',name:'Norway',flag:'🇳🇴',group:'I'},{code:'IRQ',name:'Iraq',flag:'🇮🇶',group:'I'},
-  {code:'ARG',name:'Argentina',flag:'🇦🇷',group:'J'},{code:'ALG',name:'Algeria',flag:'🇩🇿',group:'J'},{code:'AUT',name:'Austria',flag:'🇦🇹',group:'J'},{code:'JOR',name:'Jordan',flag:'🇯🇴',group:'J'},
-  {code:'POR',name:'Portugal',flag:'🇵🇹',group:'K'},{code:'COL',name:'Colombia',flag:'🇨🇴',group:'K'},{code:'UZB',name:'Uzbekistan',flag:'🇺🇿',group:'K'},{code:'COD',name:'DR Congo',flag:'🇨🇩',group:'K'},
-  {code:'ENG',name:'England',flag:'🏴',group:'L'},{code:'CRO',name:'Croatia',flag:'🇭🇷',group:'L'},{code:'GHA',name:'Ghana',flag:'🇬🇭',group:'L'},{code:'PAN',name:'Panama',flag:'🇵🇦',group:'L'},
-  {code:'FWC',name:'Special / Intro / Museum',flag:'🏆',group:'S'}
-];
-const VALID_CODES = new Set(TEAMS.map(t=>t.code));
-const VALID_LIST = TEAMS.map(t=>t.code);
-const TOTAL_STICKERS = 980;
-
-// ─────────────────────────────────────────
-// PWA install + SW
-// ─────────────────────────────────────────
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBanner').classList.add('show');
-});
-async function promptInstall(){
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('installBanner').classList.remove('show');
-}
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
-}
-
-// ─────────────────────────────────────────
-// State
-// ─────────────────────────────────────────
-let collection = {};
-let selectedCode = null;
-let currentDetailCode = null;
-let cameraStream = null;
-let cropMode = 'tight';
-
-// Ultra-fast engine
-let textDetector = null;
-let engineName = 'TextDetector';
-let autoOn = true;
-let stableHits = 0;
-let lastKey = null;
-let scanning = false;
-let rafId = null;
-let lastScanTs = 0;
-let scanEveryMs = 220; // fast but safe; uses throttling + stability
-
-function updateStability(){
-  const n = parseInt(document.getElementById('stability').value,10);
-  document.getElementById('stabilityLabel').textContent = n + ' hits';
-  document.getElementById('autoHint').textContent = 'stabilize ' + n + ' hits';
-}
-updateStability();
-
-function setCropMode(v){
-  cropMode = v;
-  document.getElementById('cropLabel').textContent = v[0].toUpperCase()+v.slice(1);
-}
-
-function loadCollection(){
-  try{ collection = JSON.parse(localStorage.getItem('panini2026')||'{}'); }catch(e){ collection = {}; }
-}
-function saveCollection(){
-  localStorage.setItem('panini2026', JSON.stringify(collection));
-  updateHeader();
-}
-
-// ─────────────────────────────────────────
-// Tabs
-// ─────────────────────────────────────────
-function switchTab(pageId, tabEl){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  tabEl.classList.add('active');
-  if(pageId==='pageScan') startCamera(); else stopCamera();
-  if(pageId==='pageCollection') renderCollection();
-  if(pageId==='pageStats') renderStats();
-}
-
-// ─────────────────────────────────────────
-// Camera + torch
-// ─────────────────────────────────────────
-async function startCamera(){
-  if(cameraStream) return;
-  const status = document.getElementById('scanStatus');
-  try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment', width:{ideal:1280}, height:{ideal:960} }, audio:false });
-    document.getElementById('cameraFeed').srcObject = cameraStream;
-    status.textContent = 'Ready. Keep the code inside the gold box.';
-    initEngine();
-    startAutoLoop();
-  }catch(e){
-    status.textContent = '⚠️ Camera not available. Tip: use HTTPS (GitHub Pages) and allow camera permission.';
-  }
-}
-
-function stopCamera(){
-  stopAutoLoop();
-  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
-  const v=document.getElementById('cameraFeed'); if(v) v.srcObject=null;
-}
-
-function getVideoTrack(){
-  if(!cameraStream) return null;
-  const tracks = cameraStream.getVideoTracks();
-  return tracks && tracks[0] ? tracks[0] : null;
-}
-
-async function toggleTorch(){
-  const sw = document.getElementById('torchSwitch');
-  const track = getVideoTrack();
-  if(!track) return;
-  const caps = track.getCapabilities ? track.getCapabilities() : {};
-  if(!caps.torch){
-    document.getElementById('torchHint').textContent = 'not supported';
-    return;
-  }
-  const turningOn = !sw.classList.contains('on');
-  try{
-    await track.applyConstraints({advanced:[{torch: turningOn}]});
-    sw.classList.toggle('on', turningOn);
-    document.getElementById('torchState').textContent = turningOn ? 'ON' : 'OFF';
-  }catch(e){
-    document.getElementById('torchHint').textContent = 'failed';
-  }
-}
-
-// ─────────────────────────────────────────
-// Ultra-fast detection engine
-// Uses Shape Detection API: TextDetector (Chromium-based). If not available, scanning falls back to manual.
-// ─────────────────────────────────────────
-function initEngine(){
-  const note = document.getElementById('engineNote');
-  if('TextDetector' in window){
-    try{
-      textDetector = new TextDetector();
-      engineName = 'TextDetector';
-      note.textContent = 'Engine: On-device TextDetector (ultra-fast).';
-    }catch(e){
-      textDetector = null;
-    }
-  }
-  if(!textDetector){
-    engineName = 'Manual';
-    note.textContent = 'Engine: TextDetector not available on this device/browser. Use manual entry.';
-    document.getElementById('scanStatus').textContent = 'Scanning not supported here — use Manual Entry below.';
-    autoOn = false;
-    document.getElementById('autoSwitch').classList.remove('on');
-    document.getElementById('autoState').textContent = 'OFF';
-  }
-}
-
-function toggleAuto(){
-  autoOn = !autoOn;
-  const sw = document.getElementById('autoSwitch');
-  sw.classList.toggle('on', autoOn);
-  document.getElementById('autoState').textContent = autoOn ? 'ON' : 'OFF';
-  if(autoOn){
-    stableHits = 0; lastKey = null;
-    startAutoLoop();
-  } else {
-    stopAutoLoop();
-    document.getElementById('scanStatus').textContent = 'Auto-scan OFF. You can still use manual entry.';
-  }
-}
-
-function computeCrop(videoW, videoH){
-  // Focus on top-right; keep it SMALL for speed.
-  let x0, y0, w, h;
-  if(cropMode==='tight'){
-    x0 = Math.floor(videoW * 0.62);
-    y0 = Math.floor(videoH * 0.02);
-    w  = Math.floor(videoW * 0.34);
-    h  = Math.floor(videoH * 0.22);
-  } else if(cropMode==='normal'){
-    x0 = Math.floor(videoW * 0.55);
-    y0 = 0;
-    w  = Math.floor(videoW * 0.42);
-    h  = Math.floor(videoH * 0.28);
-  } else {
-    x0 = Math.floor(videoW * 0.45);
-    y0 = 0;
-    w  = Math.floor(videoW * 0.55);
-    h  = Math.floor(videoH * 0.36);
-  }
-  return {x0,y0,w,h};
-}
-
-function cleanText(s){
-  return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-}
-
-function bestCodeGuess(code){
-  // Exact
-  if(VALID_CODES.has(code)) return code;
-
-  // Try common OCR confusions (letters only)
-  const swaps = {
-    'O':['S','Q','D'],
-    'S':['O','5'],
-    'B':['8'],
-    'I':['1','L'],
-    'Z':['2'],
-    'G':['C'],
-    'C':['G','O'],
-    'U':['V'],
-    'V':['U']
-  };
-
-  let candidates = new Set([code]);
-  // generate 1-edit substitutions
-  for(let i=0;i<3;i++){
-    const ch = code[i];
-    const alts = swaps[ch] || [];
-    for(const a of alts){
-      const s = code.slice(0,i) + a + code.slice(i+1);
-      candidates.add(s);
-    }
-  }
-  for(const c of candidates){
-    if(VALID_CODES.has(c)) return c;
-  }
-
-  // Hamming distance best match
-  let best = code;
-  let bestScore = 999;
-  for(const v of VALID_LIST){
-    let score = 0;
-    for(let i=0;i<3;i++) if(code[i] !== v[i]) score++;
-    if(score < bestScore){ bestScore = score; best = v; }
-    if(bestScore===1) break;
-  }
-  return bestScore<=1 ? best : code;
-}
-
-function extractCandidateFromString(str){
-  const cleaned = cleanText(str);
-  // look for trigram + number
-  const m = cleaned.match(/([A-Z]{3})(\d{1,2})/);
-  if(!m) return null;
-  const code = bestCodeGuess(m[1]);
-  const num = parseInt(m[2],10);
-  if(!(num>=1 && num<=20)) return null;
-  return {code, num, raw: cleaned};
-}
-
-async function detectOnce(){
-  if(!textDetector) return null;
-  const video = document.getElementById('cameraFeed');
-  if(!video || !video.videoWidth) return null;
-
-  const canvas = document.getElementById('scanCanvas');
-  const vw = video.videoWidth, vh = video.videoHeight;
-  canvas.width = vw; canvas.height = vh;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(video, 0, 0);
-
-  const {x0,y0,w,h} = computeCrop(vw, vh);
-  // Downscale for speed, keep enough resolution
-  const scale = 0.6; // smaller = faster
-  const crop = document.createElement('canvas');
-  crop.width = Math.max(160, Math.floor(w*scale));
-  crop.height = Math.max(90, Math.floor(h*scale));
-  const cctx = crop.getContext('2d', { willReadFrequently: true });
-  cctx.imageSmoothingEnabled = true;
-  cctx.drawImage(canvas, x0, y0, w, h, 0, 0, crop.width, crop.height);
-
-  const results = await textDetector.detect(crop);
-  if(!results || !results.length) return null;
-
-  // Try each detected text
-  for(const r of results){
-    const cand = extractCandidateFromString(r.rawValue || r.value || r.text || '');
-    if(cand) return { ...cand, confidence: 'device' };
-  }
-
-  // If detector returns separated items like 'SWE' and '12', attempt join
-  const joined = results.map(r=>cleanText(r.rawValue||r.value||r.text||'')).join('');
-  const cand2 = extractCandidateFromString(joined);
-  if(cand2) return { ...cand2, confidence: 'device' };
-
-  return null;
-}
-
-function startAutoLoop(){
-  if(!autoOn || !textDetector) return;
-  if(scanning) return;
-  scanning = true;
-  stableHits = 0; lastKey = null;
-  lastScanTs = 0;
-  const status = document.getElementById('scanStatus');
-
-  const loop = async (ts) => {
-    if(!scanning) return;
-    if(ts - lastScanTs < scanEveryMs){
-      rafId = requestAnimationFrame(loop);
-      return;
-    }
-    lastScanTs = ts;
-
-    // Skip if modal open
-    if(document.getElementById('confirmModal').classList.contains('show') ||
-       document.getElementById('feedbackOverlay').classList.contains('show')){
-      rafId = requestAnimationFrame(loop);
-      return;
-    }
-
-    try{
-      const res = await detectOnce();
-      if(res){
-        const key = res.code + '-' + res.num;
-        status.textContent = `Detected: ${res.code} ${res.num} (stabilizing…)`;
-        if(key === lastKey) stableHits++; else { stableHits = 1; lastKey = key; }
-        const need = parseInt(document.getElementById('stability').value,10);
-        if(stableHits >= need){
-          stableHits = 0; lastKey = null;
-          showConfirm(res.code, res.num, res.confidence);
-        }
-      } else {
-        status.textContent = 'Aiming… keep the code inside the gold box. (Tip: Torch ON)';
-        stableHits = 0; lastKey = null;
-      }
-    } catch(e){
-      // silently ignore
-    }
-
-    rafId = requestAnimationFrame(loop);
-  };
-
-  rafId = requestAnimationFrame(loop);
-}
-
-function stopAutoLoop(){
-  scanning = false;
-  if(rafId) cancelAnimationFrame(rafId);
-  rafId = null;
-}
-
-// ─────────────────────────────────────────
-// Confirm + add/remove + feedback
-// ─────────────────────────────────────────
-function showConfirm(code, num, confidence){
-  const modal=document.getElementById('confirmModal');
-  const sel=document.getElementById('confirmCountry');
-  sel.innerHTML = TEAMS.map(t=>`<option value="${t.code}" ${t.code===code?'selected':''}>${t.flag} ${t.code}</option>`).join('');
-  document.getElementById('confirmNumber').value = num;
-  document.getElementById('confirmDetected').textContent = code + ' ' + num;
-  document.getElementById('confirmConfidence').textContent = 'Detection: on-device · ' + (confidence || '');
-  modal.classList.add('show');
-}
-function closeConfirm(){ document.getElementById('confirmModal').classList.remove('show'); }
-function confirmSticker(){
-  const code=document.getElementById('confirmCountry').value;
-  const num=parseInt(document.getElementById('confirmNumber').value,10);
-  if(code && num>=1 && num<=20){ addSticker(code,num); closeConfirm(); }
-}
-
-function addSticker(code,num){
-  const key=code+'-'+num;
-  const isNew = !(collection[key]);
-  collection[key]=(collection[key]||0)+1;
-  saveCollection();
-  showFeedback(code,num,isNew,collection[key]);
-  updateNumberGrid();
-}
-function removeSticker(code,num){
-  const key=code+'-'+num;
-  if(collection[key]){ collection[key]--; if(collection[key]<=0) delete collection[key]; saveCollection(); }
-}
-
-function showFeedback(code,num,isNew,count){
-  const team=TEAMS.find(t=>t.code===code);
-  const overlay=document.getElementById('feedbackOverlay');
-  const card=document.getElementById('feedbackCard');
-  const emoji=document.getElementById('feedbackEmoji');
-  const title=document.getElementById('feedbackTitle');
-  const sub=document.getElementById('feedbackSub');
-  card.className='feedback-card '+(isNew?'new-card':'dup-card');
-  emoji.textContent=isNew?'🆕':'⚠️';
-  title.textContent=isNew?'NEW STICKER!':('DUPLICATE (x'+count+')');
-  title.style.color=isNew?'var(--green)':'var(--orange)';
-  sub.textContent=(team?team.flag+' '+team.name:code)+' #'+num;
-  overlay.classList.add('show');
-
-  // small sound
-  try{
-    const actx=new (window.AudioContext||window.webkitAudioContext)();
-    const osc=actx.createOscillator();
-    const gain=actx.createGain();
-    osc.connect(gain); gain.connect(actx.destination);
-    osc.type='sine';
-    if(isNew){
-      osc.frequency.setValueAtTime(523, actx.currentTime);
-      osc.frequency.setValueAtTime(659, actx.currentTime+0.09);
-      osc.frequency.setValueAtTime(784, actx.currentTime+0.18);
-    }else{
-      osc.frequency.setValueAtTime(420, actx.currentTime);
-      osc.frequency.setValueAtTime(320, actx.currentTime+0.12);
-    }
-    gain.gain.setValueAtTime(0.12, actx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime+0.28);
-    osc.start(); osc.stop(actx.currentTime+0.28);
-  }catch(e){}
-
-  setTimeout(()=>overlay.classList.remove('show'), 1200);
-}
-
-// ─────────────────────────────────────────
-// Manual entry
-// ─────────────────────────────────────────
-const countrySearch=document.getElementById('countrySearch');
-const countryList=document.getElementById('countryList');
-countrySearch.addEventListener('input', function(){
-  const q=this.value.toLowerCase();
-  if(!q){ countryList.classList.remove('show'); return; }
-  const matches=TEAMS.filter(t=>t.name.toLowerCase().includes(q)||t.code.toLowerCase().includes(q));
-  if(!matches.length){ countryList.classList.remove('show'); return; }
-  countryList.innerHTML=matches.map(t=>
-    `<div class="country-item" onclick="selectTeam('${t.code}')">${t.flag} <span>${t.name}</span> <span class="code">${t.code}</span></div>`
-  ).join('');
-  countryList.classList.add('show');
-});
-countrySearch.addEventListener('focus', function(){ if(this.value) this.dispatchEvent(new Event('input')); });
-document.addEventListener('click', function(e){ if(!e.target.closest('.manual')) countryList.classList.remove('show'); });
-
-function selectTeam(code){
-  selectedCode=code;
-  const team=TEAMS.find(t=>t.code===code);
-  countrySearch.value=team.flag+' '+team.name+' ('+team.code+')';
-  countryList.classList.remove('show');
-  const st=document.getElementById('selectedTeam');
-  st.textContent=team.flag+' '+team.name+' — tap a number';
-  st.classList.add('show');
-  updateNumberGrid();
-}
-function updateNumberGrid(){
-  const grid=document.getElementById('numberGrid');
-  if(!selectedCode){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;font-size:13px;font-weight:1000">Select a team first ↑</div>';
-    return;
-  }
-  let html='';
-  for(let i=1;i<=20;i++){
-    const key=selectedCode+'-'+i;
-    const owned=(collection[key]||0)>0;
-    html += `<div class="num-btn ${owned?'owned':''}" onclick="addSticker('${selectedCode}',${i})">${i}</div>`;
-  }
-  grid.innerHTML=html;
-}
-
-// ─────────────────────────────────────────
-// Collection + stats
-// ─────────────────────────────────────────
-function getTeamOwned(code){
-  let c=0; for(let i=1;i<=20;i++) if((collection[code+'-'+i]||0)>0) c++; return c;
-}
-function getTeamDuplicates(code){
-  let d=0; for(let i=1;i<=20;i++){ const c=(collection[code+'-'+i]||0); if(c>1) d += (c-1); } return d;
-}
-
-function renderCollection(filter){
-  const filterBar=document.getElementById('filterBar');
-  const groups=['All','A','B','C','D','E','F','G','H','I','J','K','L','S'];
-  filterBar.innerHTML = groups.map(g=>
-    `<div class="filter-btn ${(!filter && g==='All')||(filter===g)?'active':''}" onclick="renderCollection('${g==='All'?'':g}')">${g==='S'?'🏆 Special':(g==='All'?'All':'Group '+g)}</div>`
-  ).join('');
-
-  const grid=document.getElementById('teamGrid');
-  const filtered=filter?TEAMS.filter(t=>t.group===filter):TEAMS;
-  grid.innerHTML = filtered.map(t=>{
-    const owned=getTeamOwned(t.code);
-    const pct=Math.round(owned/20*100);
-    const complete=owned===20;
-    const color=complete?'var(--green)':pct>50?'var(--blue)':pct>0?'var(--orange)':'#e0e0e0';
-    return `<div class="team-card ${complete?'complete':''}" onclick="openDetail('${t.code}')">
-      <div class="team-top">
-        <div class="team-flag">${t.flag}</div>
-        <div style="flex:1">
-          <div class="team-name">${t.name}</div>
-          <div class="team-code">${t.code} · ${t.group==='S'?'Special':'Group '+t.group}</div>
-        </div>
-      </div>
-      <div class="team-progress">
-        <div class="team-progress-bar"><div class="team-progress-fill" style="width:${pct}%;background:${color}"></div></div>
-        <div class="team-progress-text">${owned}/20 ${complete?'✓':''}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openDetail(code){
-  currentDetailCode=code;
-  const team=TEAMS.find(t=>t.code===code);
-  document.getElementById('detailFlag').textContent=team.flag;
-  document.getElementById('detailName').textContent=team.name;
-  document.getElementById('detailGroup').textContent=team.group==='S'?'Special Stickers':('Group '+team.group+' · '+team.code);
-  renderDetailStickers();
-  document.getElementById('detailModal').classList.add('show');
-}
-function closeDetail(){
-  document.getElementById('detailModal').classList.remove('show');
-  currentDetailCode=null;
-  renderCollection();
-}
-function renderDetailStickers(){
-  const code=currentDetailCode; if(!code) return;
-  const owned=getTeamOwned(code);
-  const missing=20-owned;
-  const dups=getTeamDuplicates(code);
-  const pct=Math.round(owned/20*100);
-  document.getElementById('detailOwned').textContent=owned;
-  document.getElementById('detailMissing').textContent=missing;
-  document.getElementById('detailDups').textContent=dups;
-  document.getElementById('detailProgressFill').style.width=pct+'%';
-  const grid=document.getElementById('detailStickerGrid');
-  let html='';
-  for(let i=1;i<=20;i++){
-    const key=code+'-'+i;
-    const c=(collection[key]||0);
-    const owned=(c>0);
-    html += `<div class="sticker-cell ${owned?'owned':'missing'}" onclick="toggleDetailSticker('${code}',${i})">
-      <div class="sticker-num">${i}</div>
-      ${c>1?`<div class="sticker-dup">x${c}</div>`:''}
-      <div style="font-size:9px;margin-top:2px;font-weight:1100">${owned?'✓':'—'}</div>
-    </div>`;
-  }
-  grid.innerHTML=html;
-}
-function toggleDetailSticker(code,num){
-  const key=code+'-'+num;
-  if((collection[key]||0)>0) removeSticker(code,num); else addSticker(code,num);
-  renderDetailStickers();
-}
-function markAllTeam(owned){
-  if(!currentDetailCode) return;
-  if(!owned && !confirm('Clear all stickers for this team?')) return;
-  for(let i=1;i<=20;i++){
-    const key=currentDetailCode+'-'+i;
-    if(owned){ if(!collection[key]) collection[key]=1; }
-    else { delete collection[key]; }
-  }
-  saveCollection();
-  renderDetailStickers();
-}
-
-function renderStats(){
-  let totalOwned=0, totalDups=0, teamsComplete=0;
-  TEAMS.forEach(t=>{
-    const owned=getTeamOwned(t.code);
-    if(owned===20) teamsComplete++;
-    totalOwned += owned;
-    totalDups += getTeamDuplicates(t.code);
-  });
-  const pct=Math.round(totalOwned/TOTAL_STICKERS*100);
-  document.getElementById('statPercent').innerHTML = pct + '<span>%</span>';
-  document.getElementById('statOwned').textContent=totalOwned;
-  document.getElementById('statMissing').textContent=TOTAL_STICKERS-totalOwned;
-  document.getElementById('statDuplicates').textContent=totalDups;
-  document.getElementById('statTeamsComplete').textContent=teamsComplete;
-  document.getElementById('statProgressFill').style.width=pct+'%';
-  document.getElementById('completionBanner').classList.toggle('show', totalOwned===TOTAL_STICKERS);
-
-  const sorted=TEAMS.map(t=>({...t, owned:getTeamOwned(t.code)})).sort((a,b)=>b.owned-a.owned);
-  document.getElementById('topTeams').innerHTML = sorted.slice(0,5).map(t=>
-    `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0">
-      <span style="font-size:20px">${t.flag}</span>
-      <span style="flex:1;font-size:13px;font-weight:1100">${t.name}</span>
-      <span style="font-size:13px;font-weight:1200;color:var(--green)">${t.owned}/20</span>
-    </div>`
-  ).join('');
-
-  const sortedMissing=sorted.filter(t=>t.owned<20).sort((a,b)=>a.owned-b.owned);
-  document.getElementById('bottomTeams').innerHTML = sortedMissing.slice(0,5).map(t=>
-    `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0">
-      <span style="font-size:20px">${t.flag}</span>
-      <span style="flex:1;font-size:13px;font-weight:1100">${t.name}</span>
-      <span style="font-size:13px;font-weight:1200;color:var(--red)">${20-t.owned} missing</span>
-    </div>`
-  ).join('') || '<div style="text-align:center;padding:18px;color:var(--green);font-weight:1200">🎉 All teams complete!</div>';
-}
-
-// ─────────────────────────────────────────
-// Export/Import
-// ─────────────────────────────────────────
-function exportCollection(){
-  const data=JSON.stringify(collection,null,2);
-  const blob=new Blob([data],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='panini_wc2026_collection.json';
-  a.click();
-}
-function exportMissing(){
-  let lines=['PANINI WORLD CUP 2026 — MISSING STICKERS LIST','Generated: '+new Date().toLocaleString(),''];
-  TEAMS.forEach(t=>{
-    const missing=[];
-    for(let i=1;i<=20;i++) if(!(collection[t.code+'-'+i])) missing.push(i);
-    if(missing.length) lines.push(`${t.flag} ${t.name} (${t.code}): `+missing.map(n=>t.code+n).join(', '));
-  });
-  let totalOwned=0; TEAMS.forEach(t=> totalOwned+=getTeamOwned(t.code));
-  lines.push('',`Total missing: ${TOTAL_STICKERS-totalOwned} / ${TOTAL_STICKERS}`);
-  lines.push('','--- DUPLICATES (available for trade) ---','');
-  TEAMS.forEach(t=>{
-    const dups=[];
-    for(let i=1;i<=20;i++){ const c=collection[t.code+'-'+i]||0; if(c>1) dups.push(t.code+i+' (x'+(c-1)+')'); }
-    if(dups.length) lines.push(`${t.flag} ${t.name}: `+dups.join(', '));
-  });
-  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='panini_wc2026_missing.txt';
-  a.click();
-}
-function importCollection(event){
-  const file=event.target.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=(e)=>{
-    try{
-      const data=JSON.parse(e.target.result);
-      if(typeof data==='object' && data){ collection=data; saveCollection(); alert('✅ Imported!'); }
-    }catch(err){ alert('❌ Invalid JSON'); }
-  };
-  reader.readAsText(file);
-  event.target.value='';
-}
-function resetCollection(){
-  if(!confirm('⚠️ Delete your entire collection?')) return;
-  if(!confirm('⚠️ Really sure? This cannot be undone.')) return;
-  collection={}; saveCollection(); alert('Reset done.');
-}
-
-// ─────────────────────────────────────────
-// Header progress
-// ─────────────────────────────────────────
-function updateHeader(){
-  let totalOwned=0; TEAMS.forEach(t=> totalOwned += getTeamOwned(t.code));
-  const pct=Math.round(totalOwned/TOTAL_STICKERS*100);
-  document.getElementById('headerProgress').style.width=pct+'%';
-  document.getElementById('headerProgressText').textContent=`${totalOwned} / ${TOTAL_STICKERS} stickers (${pct}%)`;
-}
-
-// ─────────────────────────────────────────
-// Init
-// ─────────────────────────────────────────
-loadCollection();
-updateHeader();
-renderCollection();
-updateNumberGrid();
-
-// Populate confirm select
-document.getElementById('confirmCountry').innerHTML = TEAMS.map(t=>`<option value="${t.code}">${t.flag} ${t.code}</option>`).join('');
-
-// Start camera when on Scan
-startCamera();
-</script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
