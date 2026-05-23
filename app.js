@@ -19,7 +19,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // --- App version ---
-const APP_VERSION = 'v1.2.0';
+const APP_VERSION = 'v1.2.1';
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
 
 // --- Teams ---
 const TEAMS = [
@@ -62,6 +64,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.s
 // --- App state ---
 let collection = {}; // key -> count
 let currentUser = null;
+let cloudLoaded = false;
 let cloudSaving = false;
 let cloudSaveTimer = null;
 
@@ -69,7 +72,7 @@ let cloudSaveTimer = null;
 let selectedCode=null;
 let currentDetailCode=null;
 let cameraStream=null;
-let cropMode='tight';
+let cropMode = IS_IOS ? 'normal' : 'tight';
 let worker=null;
 let workerReady=false;
 let ocrBusy=false;
@@ -78,7 +81,7 @@ let stableHits=0;
 let lastKey=null;
 let rafId=null;
 let scanning=false;
-let scanEveryMs=900; // slower but stable
+let scanEveryMs = IS_IOS ? 1100 : 900;
 let lastScanTs=0;
 let prevSig=null;
 let scanTick=0;
@@ -89,6 +92,7 @@ function updateAppVersion(){
   const el = document.getElementById('appVersion');
   if(el) el.textContent = APP_VERSION;
 }
+
 
 // Local cache (for offline)
 function loadLocalCache(){
@@ -120,31 +124,48 @@ window.authLogin = async function(){
   setAuthError('');
   const email = (document.getElementById('authEmail').value||'').trim();
   const password = document.getElementById('authPassword').value||'';
-  try{ await signInWithEmailAndPassword(auth, email, password); }
-  catch(e){ setAuthError(e.message || String(e)); }
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch(e){
+    setAuthError(e.message || String(e));
+  }
 };
 
 window.authSignup = async function(){
   setAuthError('');
   const email = (document.getElementById('authEmail').value||'').trim();
   const password = document.getElementById('authPassword').value||'';
-  try{ await createUserWithEmailAndPassword(auth, email, password); }
-  catch(e){ setAuthError(e.message || String(e)); }
+  try{
+    await createUserWithEmailAndPassword(auth, email, password);
+  } catch(e){
+    setAuthError(e.message || String(e));
+  }
 };
 
 window.authResetPassword = async function(){
   setAuthError('');
   const email = (document.getElementById('authEmail').value||'').trim();
   if(!email){ setAuthError('Enter your email first.'); return; }
-  try{ await sendPasswordResetEmail(auth, email); setAuthError('Password reset email sent.'); }
-  catch(e){ setAuthError(e.message || String(e)); }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    setAuthError('Password reset email sent.');
+  } catch(e){
+    setAuthError(e.message || String(e));
+  }
 };
 
-async function doLogout(){ await signOut(auth); }
+async function doLogout(){
+  await signOut(auth);
+}
 
+// Attach logout button in header pill
 function updateUserPill(){
   const pill = document.getElementById('userPill');
-  if(!currentUser){ pill.style.display='none'; pill.innerHTML=''; return; }
+  if(!currentUser){
+    pill.style.display='none';
+    pill.innerHTML='';
+    return;
+  }
   pill.style.display='inline-flex';
   const email = currentUser.email || 'user';
   pill.innerHTML = `✅ ${email} <button id="logoutBtn">Logout</button>`;
@@ -159,14 +180,19 @@ async function loadFromCloud(uid){
     const snap = await getDoc(ref);
     if(snap.exists()){
       const data = snap.data();
-      if(data && data.collection && typeof data.collection==='object') collection = data.collection;
+      if(data && data.collection && typeof data.collection==='object'){
+        collection = data.collection;
+      }
     } else {
+      // create empty doc
       await setDoc(ref, { collection: {}, updatedAt: nowISO() }, { merge: true });
       collection = {};
     }
+    cloudLoaded = true;
     saveLocalCache();
     setCloudStatus('Cloud: synced');
   } catch(e){
+    // fall back to local cache
     const local = loadLocalCache();
     if(local.collection) collection = local.collection;
     setCloudStatus('Cloud: failed (using local cache)');
@@ -195,12 +221,16 @@ async function saveToCloud(){
   }
 }
 
+// --- Auth state observer ---
 onAuthStateChanged(auth, async (user)=>{
   currentUser = user || null;
   updateUserPill();
   if(!currentUser){
+    cloudLoaded = false;
+    // show auth overlay, but keep app usable only after login
     showAuth(true);
     setCloudStatus('Cloud: not connected');
+    // Load local cache so user can still see their last state (optional)
     const local = loadLocalCache();
     if(local.collection) collection = local.collection;
     initUI();
@@ -222,20 +252,7 @@ window.switchTab = function(pageId, tabEl){
   if(pageId==='pageStats') renderStats();
 };
 
-// --- Export / Import ---
-function csvEsc(v){
-  const s = String(v ?? '');
-  return (s.includes(',')||s.includes('"')||s.includes('
-')) ? '"'+s.replace(/"/g,'""')+'"' : s;
-}
-function downloadBlob(content, filename, type){
-  const blob=new Blob([content],{type});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=filename;
-  a.click();
-}
-
+// exports
 window.exportCollectionJSON = function(){
   const payload = { updatedAt: nowISO(), uid: currentUser?.uid || null, collection };
   downloadBlob(JSON.stringify(payload, null, 2), 'panini_wc2026_collection.json', 'application/json');
@@ -249,8 +266,7 @@ window.exportMissingTXT = function(){
   });
   const totalOwned = TEAMS.reduce((s,t)=>s+getTeamOwned(t.code),0);
   lines.push('',`Total missing: ${TOTAL_STICKERS-totalOwned} / ${TOTAL_STICKERS}`);
-  downloadBlob(lines.join('
-'), 'panini_wc2026_missing.txt', 'text/plain');
+  downloadBlob(lines.join('\n'), 'panini_wc2026_missing.txt', 'text/plain');
 };
 window.exportCollectionCSV = function(){
   const rows=[['code','number','team','count','duplicates']];
@@ -258,11 +274,12 @@ window.exportCollectionCSV = function(){
     for(let i=1;i<=20;i++){
       const key=t.code+'-'+i;
       const count=collection[key]||0;
-      if(count>0) rows.push([t.code,i,t.name,count,Math.max(0,count-1)]);
+      if(count>0){
+        rows.push([t.code,i,t.name,count,Math.max(0,count-1)]);
+      }
     }
   }
-  const csv = rows.map(r=>r.map(csvEsc).join(',')).join('
-');
+  const csv = rows.map(r=>r.map(csvEsc).join(',')).join('\n');
   downloadBlob(csv, 'panini_wc2026_collection.csv', 'text/csv');
 };
 window.exportMissingCSV = function(){
@@ -273,8 +290,7 @@ window.exportMissingCSV = function(){
       if(!(collection[key])) rows.push([t.code,i,t.name,'missing']);
     }
   }
-  const csv = rows.map(r=>r.map(csvEsc).join(',')).join('
-');
+  const csv = rows.map(r=>r.map(csvEsc).join(',')).join('\n');
   downloadBlob(csv, 'panini_wc2026_missing.csv', 'text/csv');
 };
 window.importCollection = function(event){
@@ -285,7 +301,7 @@ window.importCollection = function(event){
     try{
       const data=JSON.parse(e.target.result);
       if(data && typeof data==='object'){
-        collection = data.collection ? data.collection : data;
+        if(data.collection) collection=data.collection; else collection=data;
         scheduleSaveToCloud();
         initUI();
         alert('✅ Imported!');
@@ -303,14 +319,32 @@ window.resetCollection = function(){
   initUI();
 };
 
+function csvEsc(v){
+  const s = String(v ?? '');
+  return (s.includes(',')||s.includes('"')||s.includes('\n')) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function downloadBlob(content, filename, type){
+  const blob=new Blob([content],{type});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+}
+
 // --- Header progress ---
-function getTeamOwned(code){ let c=0; for(let i=1;i<=20;i++) if((collection[code+'-'+i]||0)>0) c++; return c; }
-function getTeamDuplicates(code){ let d=0; for(let i=1;i<=20;i++){ const c=(collection[code+'-'+i]||0); if(c>1) d += (c-1); } return d; }
 function updateHeader(){
   const totalOwned = TEAMS.reduce((s,t)=>s+getTeamOwned(t.code),0);
   const pct=Math.round(totalOwned/TOTAL_STICKERS*100);
   document.getElementById('headerProgress').style.width=pct+'%';
   document.getElementById('headerProgressText').textContent=`${totalOwned} / ${TOTAL_STICKERS} stickers (${pct}%)`;
+}
+
+// --- Collection helpers ---
+function getTeamOwned(code){
+  let c=0; for(let i=1;i<=20;i++) if((collection[code+'-'+i]||0)>0) c++; return c;
+}
+function getTeamDuplicates(code){
+  let d=0; for(let i=1;i<=20;i++){ const c=(collection[code+'-'+i]||0); if(c>1) d += (c-1); } return d;
 }
 
 // --- Manual entry ---
@@ -462,6 +496,18 @@ window.toggleDetailSticker = function(code,num){
   renderDetailStickers();
   updateHeader();
 };
+window.markAllTeam = function(owned){
+  if(!currentDetailCode) return;
+  if(!owned && !confirm('Clear all stickers for this team?')) return;
+  for(let i=1;i<=20;i++){
+    const key=currentDetailCode+'-'+i;
+    if(owned){ if(!collection[key]) collection[key]=1; }
+    else { delete collection[key]; }
+  }
+  scheduleSaveToCloud();
+  renderDetailStickers();
+  updateHeader();
+};
 
 // --- Stats ---
 function renderStats(){
@@ -504,11 +550,25 @@ async function initWorker(){
   workerReady=true;
 }
 
+function armIosTapToStart(){
+  const video = document.getElementById('cameraFeed');
+  const status = document.getElementById('scanStatus');
+  if(!video || !status) return;
+  status.textContent = '📱 Tap the camera view to start (iOS requires a user action).';
+  const handler = async ()=>{
+    video.removeEventListener('click', handler);
+    video.removeEventListener('touchend', handler);
+    try{ await startCamera(); }catch(e){}
+  };
+  video.addEventListener('click', handler, { once:true });
+  video.addEventListener('touchend', handler, { once:true });
+}
+
 async function startCamera(){
   if(cameraStream) return;
   const status=document.getElementById('scanStatus');
   try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment', width:{ideal:1280}, height:{ideal:960} }, audio:false });
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment', width:{ideal:(IS_IOS?1024:1280)}, height:{ideal:(IS_IOS?768:960)} }, audio:false });
     document.getElementById('cameraFeed').srcObject = cameraStream;
     status.textContent='Loading OCR… (first time only)';
     await initWorker();
@@ -516,6 +576,7 @@ async function startCamera(){
     setTimeout(()=>startAutoLoop(), 800);
   }catch(e){
     status.textContent='⚠️ Camera not available. Use HTTPS and allow camera permission.';
+    if(IS_IOS) armIosTapToStart();
   }
 }
 function stopCamera(){
@@ -523,7 +584,6 @@ function stopCamera(){
   if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
   const v=document.getElementById('cameraFeed'); if(v) v.srcObject=null;
 }
-
 window.toggleTorch = async function(){
   const sw=document.getElementById('torchSwitch');
   if(!cameraStream) return;
@@ -618,10 +678,10 @@ async function ocrCrop(){
 
   const {x0,y0,w,h}=computeCrop(vw,vh);
   const cropCanvas=document.getElementById('cropCanvas');
-  const targetW=520;
+  const targetW = IS_IOS ? 480 : 520;
   const scale=targetW/w;
   cropCanvas.width=targetW;
-  cropCanvas.height=Math.max(140, Math.floor(h*scale));
+  cropCanvas.height=Math.max(120, Math.floor(h*scale));
   const cctx=cropCanvas.getContext('2d',{willReadFrequently:true});
   cctx.imageSmoothingEnabled=true;
   cctx.drawImage(canvas,x0,y0,w,h,0,0,cropCanvas.width,cropCanvas.height);
@@ -656,11 +716,11 @@ function startAutoLoop(){
 
     if(document.getElementById('confirmModal').classList.contains('show') ||
        document.getElementById('feedbackOverlay').classList.contains('show') ||
-       document.getElementById('authOverlay').classList.contains('show') ||
-       cloudSaving){ rafId=requestAnimationFrame(loop); return; }
+       document.getElementById('authOverlay').classList.contains('show') || cloudSaving){ rafId=requestAnimationFrame(loop); return; }
 
     try{
       scanTick++;
+      // Throttle OCR load: skip every other tick (helps mobile browsers)
       if(scanTick % 2 === 1){ rafId=requestAnimationFrame(loop); return; }
       const out=await ocrCrop();
       if(out?.skipped){
@@ -689,6 +749,7 @@ function startAutoLoop(){
 }
 function stopAutoLoop(){ scanning=false; if(rafId) cancelAnimationFrame(rafId); rafId=null; }
 
+// confirm modal
 function showConfirm(code,num,confidence){
   const modal=document.getElementById('confirmModal');
   const sel=document.getElementById('confirmCountry');
@@ -705,17 +766,22 @@ window.confirmSticker = function(){
   if(code && num>=1 && num<=20){ window.addSticker(code,num); window.closeConfirm(); }
 };
 
+// Init UI
 function initUI(){
   updateAppVersion();
+  // confirm select
   document.getElementById('confirmCountry').innerHTML = TEAMS.map(t=>`<option value="${t.code}">${t.flag} ${t.code}</option>`).join('');
   updateHeader();
   renderCollection();
   updateNumberGrid();
   renderStats();
+  // camera only if authenticated
   if(currentUser) startCamera(); else stopCamera();
 }
 
+// initial render (before auth resolves)
 (function bootstrap(){
+  // preload local cache to avoid empty screen
   const local = loadLocalCache();
   if(local.collection) collection = local.collection;
   initUI();
