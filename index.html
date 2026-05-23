@@ -37,12 +37,12 @@
     .page.active{display:block}
 
     .camera-wrap{max-width:440px;margin:0 auto}
-    .camera-container{position:relative;width:100%;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4}
+    .camera-container{position:relative;width:100%;border-radius:16px;overflow:hidden;background:#000;aspect-ratio: 0.7522 / 1}
     video{width:100%;height:100%;object-fit:cover}
 
     .scan-overlay{position:absolute;inset:0;pointer-events:none}
-    .sticker-guide{position:absolute;border:2px solid var(--gold);border-radius:12px;background:rgba(212,175,55,.06);box-shadow:0 0 0 9999px rgba(0,0,0,.16) inset}
-    .code-guide{position:absolute;border:2px dashed rgba(255,255,255,.9);border-radius:10px;background:rgba(0,0,0,.22)}
+    .sticker-guide{position:absolute;border:2px solid var(--gold);border-radius:12px;background:rgba(212,175,55,.05);box-shadow:0 0 0 9999px rgba(0,0,0,.16) inset}
+    .code-guide{position:absolute;border:2px dashed rgba(255,255,255,.92);border-radius:10px;background:rgba(0,0,0,.20)}
 
     .controls{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
@@ -55,7 +55,7 @@
     .switch.on::after{transform:translateX(20px)}
 
     .scan-status{text-align:center;margin-top:10px;font-size:13px;color:var(--muted);min-height:24px;font-weight:800}
-    .small-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-weight:900}
+    .small-note{text-align:center;margin-top:6px;font-size:11px;color:var(--muted);font-weight:900}
 
     .manual{margin-top:14px;background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
     .manual h3{font-size:14px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;font-weight:1000}
@@ -78,9 +78,13 @@
     .num-btn.owned{background:#e8f5e9;border-color:var(--green);color:var(--green)}
 
     .list{max-width:440px;margin:0 auto}
-    .row{background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center}
+    .row{background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
     .row b{font-size:14px}
     .row small{color:var(--muted);font-weight:900}
+
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:1100;cursor:pointer}
+    .btn.primary{background:var(--blue);color:#fff}
+    .btn.secondary{background:#e0e0e0}
 
     .feedback-overlay{display:none;position:fixed;inset:0;z-index:200;justify-content:center;align-items:center;background:rgba(0,0,0,.6)}
     .feedback-overlay.show{display:flex}
@@ -101,22 +105,36 @@
     .confirm-actions button{flex:1;padding:12px;border:none;border-radius:12px;font-weight:1200;font-size:14px;cursor:pointer}
     .btn-confirm{background:var(--green);color:#fff}
     .btn-cancel{background:#e0e0e0;color:var(--text)}
+
+    .auth-overlay{display:none;position:fixed;inset:0;z-index:300;background:linear-gradient(135deg,rgba(15,15,31,.92),rgba(26,33,62,.92));padding:16px}
+    .auth-overlay.show{display:flex;align-items:center;justify-content:center}
+    .auth-card{width:100%;max-width:440px;background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .auth-title{font-weight:1200;font-size:18px;color:var(--dark);text-align:center}
+    .auth-sub{font-weight:900;font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+    .auth-row{display:flex;gap:8px;margin-top:12px}
+    .auth-input{flex:1;width:100%;padding:12px 14px;border:2px solid #e0e0e0;border-radius:12px;font-size:14px;font-weight:900;outline:none}
+    .auth-error{margin-top:10px;color:var(--red);font-weight:900;font-size:12px;min-height:16px;text-align:center}
+    .user-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;margin-top:10px;color:#fff;font-weight:900;font-size:12px}
+    .user-pill button{border:none;border-radius:999px;background:rgba(212,175,55,.9);color:var(--dark);font-weight:1100;padding:6px 10px;cursor:pointer}
   </style>
 </head>
 <body>
   <div class="header">
     <h1>⚽ <span>Panini</span> WC 2026 Tracker</h1>
-    <div class="subtitle">ROI OCR • Code-only scan</div>
+    <div class="subtitle">ROI OCR • Trade matching</div>
     <div class="progress-header"><div class="progress-header-fill" id="headerProgress"></div></div>
     <div class="progress-header-text" id="headerProgressText">0 / 980 stickers</div>
-    <div class="version-badge" id="appVersion">v1.4.0</div>
+    <div class="version-badge" id="appVersion">v1.5.0</div>
+    <div style="display:flex;justify-content:center;margin-top:10px">
+      <div class="user-pill" id="userPill" style="display:none">Signed in</div>
+    </div>
   </div>
 
   <div class="page active" id="pageScan">
     <div class="camera-wrap">
       <div class="camera-container" id="cameraContainer">
         <video id="cameraFeed" autoplay playsinline muted></video>
-        <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-overlay">
           <div class="sticker-guide" id="stickerGuide"></div>
           <div class="code-guide" id="codeGuide"></div>
         </div>
@@ -144,13 +162,12 @@
             <input id="stability" type="range" min="1" max="4" value="2" style="flex:1" oninput="updateStability()" />
             <div class="pill" id="stabilityLabel">2 hits</div>
           </div>
-          <div class="small-note">Align the sticker inside the gold box. Keep the code inside the dashed box.</div>
+          <div class="small-note">Tip: Fill the frame with the sticker. Keep the code inside the dashed box.</div>
         </div>
       </div>
 
       <div class="scan-status" id="scanStatus">Starting camera…</div>
       <div class="small-note" id="debugLine"></div>
-
       <canvas id="cropCanvas" style="display:none"></canvas>
 
       <div class="manual">
@@ -171,13 +188,14 @@
   </div>
 
   <div class="page" id="pageStats">
-    <div class="list" style="max-width:440px;margin:0 auto">
+    <div class="list">
       <div class="row"><div><b>Owned</b><br><small>unique stickers</small></div><div style="font-size:22px;font-weight:1200;color:var(--green)" id="statOwned">0</div></div>
       <div class="row"><div><b>Missing</b><br><small>to complete 980</small></div><div style="font-size:22px;font-weight:1200;color:var(--red)" id="statMissing">980</div></div>
       <div class="row"><div><b>Duplicates</b><br><small>extra copies</small></div><div style="font-size:22px;font-weight:1200;color:var(--orange)" id="statDup">0</div></div>
-      <div class="row"><div><b>Export</b><br><small>backup collection</small></div><div>
-        <button onclick="exportJSON()" style="padding:10px 12px;border:none;border-radius:12px;font-weight:1100;background:var(--blue);color:#fff;cursor:pointer">JSON</button>
-      </div></div>
+      <div class="row"><div><b>Find traders</b><br><small>who has my missing stickers as duplicates</small></div>
+        <div><button class="btn primary" onclick="findTraders()">Find</button></div>
+      </div>
+      <div id="traderResults"></div>
     </div>
   </div>
 
@@ -205,507 +223,721 @@
     </div>
   </div>
 
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-title">Sign in to sync + find traders</div>
+      <div class="auth-sub">Create an account once. We store your name & class for trade matching.</div>
+      <div class="auth-row" style="margin-top:14px"><input class="auth-input" id="authEmail" placeholder="Email" autocomplete="email" /></div>
+      <div class="auth-row"><input class="auth-input" id="authPassword" type="password" placeholder="Password" autocomplete="current-password" /></div>
+      <div class="auth-row"><input class="auth-input" id="authName" placeholder="Your name (for trades)" /></div>
+      <div class="auth-row"><input class="auth-input" id="authClass" placeholder="Your class/group (e.g., 9B, Collectors Geneva)" /></div>
+      <button class="btn primary" style="width:100%;margin-top:10px" onclick="authLogin()">Login</button>
+      <button class="btn secondary" style="width:100%;margin-top:10px" onclick="authSignup()">Create account</button>
+      <div class="auth-error" id="authError"></div>
+      <div class="small-note" style="margin-top:10px">If you get “unauthorized-domain”, add your GitHub Pages domain in Firebase Authorized Domains.</div>
+    </div>
+  </div>
+
   <div class="tabs">
     <div class="tab active" onclick="switchTab('pageScan',this)"><span class="tab-icon">📸</span><span class="tab-label">Scan</span></div>
     <div class="tab" onclick="switchTab('pageCollection',this)"><span class="tab-icon">📋</span><span class="tab-label">Collection</span></div>
-    <div class="tab" onclick="switchTab('pageStats',this)"><span class="tab-icon">📊</span><span class="tab-label">Stats</span></div>
+    <div class="tab" onclick="switchTab('pageStats',this)"><span class="tab-icon">📊</span><span class="tab-label">Trades</span></div>
   </div>
 
-<script>
-// ---------------- Data ----------------
-const APP_VERSION = 'v1.4.0';
-const TOTAL_STICKERS = 980;
-const STICKER_AR = 0.7522;
-const LABEL_RX = 0.515, LABEL_RY = 0.05, LABEL_RW = 0.249, LABEL_RH = 0.059;
+<script type="module">
+  import { firebaseConfig } from './firebase-config.js';
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+    createUserWithEmailAndPassword, signOut
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import {
+    getFirestore, doc, getDoc, setDoc,
+    writeBatch, collection as fsCollection,
+    getDocs, query, where
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const TEAMS = [
-  {code:'MEX',name:'Mexico',flag:'🇲🇽',group:'A'},{code:'KOR',name:'South Korea',flag:'🇰🇷',group:'A'},{code:'RSA',name:'South Africa',flag:'🇿🇦',group:'A'},{code:'CZE',name:'Czechia',flag:'🇨🇿',group:'A'},
-  {code:'CAN',name:'Canada',flag:'🇨🇦',group:'B'},{code:'SUI',name:'Switzerland',flag:'🇨🇭',group:'B'},{code:'QAT',name:'Qatar',flag:'🇶🇦',group:'B'},{code:'BIH',name:'Bosnia & Herzegovina',flag:'🇧🇦',group:'B'},
-  {code:'BRA',name:'Brazil',flag:'🇧🇷',group:'C'},{code:'MAR',name:'Morocco',flag:'🇲🇦',group:'C'},{code:'SCO',name:'Scotland',flag:'🏴',group:'C'},{code:'HAI',name:'Haiti',flag:'🇭🇹',group:'C'},
-  {code:'USA',name:'United States',flag:'🇺🇸',group:'D'},{code:'PAR',name:'Paraguay',flag:'🇵🇾',group:'D'},{code:'AUS',name:'Australia',flag:'🇦🇺',group:'D'},{code:'TUR',name:'Türkiye',flag:'🇹🇷',group:'D'},
-  {code:'GER',name:'Germany',flag:'🇩🇪',group:'E'},{code:'ECU',name:'Ecuador',flag:'🇪🇨',group:'E'},{code:'CIV',name:"Côte d'Ivoire",flag:'🇨🇮',group:'E'},{code:'CUW',name:'Curaçao',flag:'🇨🇼',group:'E'},
-  {code:'NED',name:'Netherlands',flag:'🇳🇱',group:'F'},{code:'JPN',name:'Japan',flag:'🇯🇵',group:'F'},{code:'TUN',name:'Tunisia',flag:'🇹🇳',group:'F'},{code:'SWE',name:'Sweden',flag:'🇸🇪',group:'F'},
-  {code:'BEL',name:'Belgium',flag:'🇧🇪',group:'G'},{code:'IRN',name:'Iran',flag:'🇮🇷',group:'G'},{code:'EGY',name:'Egypt',flag:'🇪🇬',group:'G'},{code:'NZL',name:'New Zealand',flag:'🇳🇿',group:'G'},
-  {code:'ESP',name:'Spain',flag:'🇪🇸',group:'H'},{code:'URU',name:'Uruguay',flag:'🇺🇾',group:'H'},{code:'KSA',name:'Saudi Arabia',flag:'🇸🇦',group:'H'},{code:'CPV',name:'Cape Verde',flag:'🇨🇻',group:'H'},
-  {code:'FRA',name:'France',flag:'🇫🇷',group:'I'},{code:'SEN',name:'Senegal',flag:'🇸🇳',group:'I'},{code:'NOR',name:'Norway',flag:'🇳🇴',group:'I'},{code:'IRQ',name:'Iraq',flag:'🇮🇶',group:'I'},
-  {code:'ARG',name:'Argentina',flag:'🇦🇷',group:'J'},{code:'ALG',name:'Algeria',flag:'🇩🇿',group:'J'},{code:'AUT',name:'Austria',flag:'🇦🇹',group:'J'},{code:'JOR',name:'Jordan',flag:'🇯🇴',group:'J'},
-  {code:'POR',name:'Portugal',flag:'🇵🇹',group:'K'},{code:'COL',name:'Colombia',flag:'🇨🇴',group:'K'},{code:'UZB',name:'Uzbekistan',flag:'🇺🇿',group:'K'},{code:'COD',name:'DR Congo',flag:'🇨🇩',group:'K'},
-  {code:'ENG',name:'England',flag:'🏴',group:'L'},{code:'CRO',name:'Croatia',flag:'🇭🇷',group:'L'},{code:'GHA',name:'Ghana',flag:'🇬🇭',group:'L'},{code:'PAN',name:'Panama',flag:'🇵🇦',group:'L'},
-  {code:'FWC',name:'Special / Intro / Museum',flag:'🏆',group:'S'}
-];
-const TEAM_BY_CODE = Object.fromEntries(TEAMS.map(t=>[t.code,t]));
-const VALID_LIST = TEAMS.map(t=>t.code);
+  // ---------------- Version + constants ----------------
+  const APP_VERSION = 'v1.5.0';
+  const TOTAL_STICKERS = 980;
+  const STICKER_AR = 0.7522;
+  const LABEL_RX = 0.515, LABEL_RY = 0.05, LABEL_RW = 0.249, LABEL_RH = 0.059;
 
-function numRange(code){ return code==='FWC' ? [0,19] : [1,20]; }
-function isValidSticker(code,num){ if(code==='FWC') return num>=0 && num<=19; return num>=1 && num<=20; }
+  const TEAMS = [
+    {code:'MEX',name:'Mexico',flag:'🇲🇽',group:'A'},{code:'KOR',name:'South Korea',flag:'🇰🇷',group:'A'},{code:'RSA',name:'South Africa',flag:'🇿🇦',group:'A'},{code:'CZE',name:'Czechia',flag:'🇨🇿',group:'A'},
+    {code:'CAN',name:'Canada',flag:'🇨🇦',group:'B'},{code:'SUI',name:'Switzerland',flag:'🇨🇭',group:'B'},{code:'QAT',name:'Qatar',flag:'🇶🇦',group:'B'},{code:'BIH',name:'Bosnia & Herzegovina',flag:'🇧🇦',group:'B'},
+    {code:'BRA',name:'Brazil',flag:'🇧🇷',group:'C'},{code:'MAR',name:'Morocco',flag:'🇲🇦',group:'C'},{code:'SCO',name:'Scotland',flag:'🏴',group:'C'},{code:'HAI',name:'Haiti',flag:'🇭🇹',group:'C'},
+    {code:'USA',name:'United States',flag:'🇺🇸',group:'D'},{code:'PAR',name:'Paraguay',flag:'🇵🇾',group:'D'},{code:'AUS',name:'Australia',flag:'🇦🇺',group:'D'},{code:'TUR',name:'Türkiye',flag:'🇹🇷',group:'D'},
+    {code:'GER',name:'Germany',flag:'🇩🇪',group:'E'},{code:'ECU',name:'Ecuador',flag:'🇪🇨',group:'E'},{code:'CIV',name:"Côte d'Ivoire",flag:'🇨🇮',group:'E'},{code:'CUW',name:'Curaçao',flag:'🇨🇼',group:'E'},
+    {code:'NED',name:'Netherlands',flag:'🇳🇱',group:'F'},{code:'JPN',name:'Japan',flag:'🇯🇵',group:'F'},{code:'TUN',name:'Tunisia',flag:'🇹🇳',group:'F'},{code:'SWE',name:'Sweden',flag:'🇸🇪',group:'F'},
+    {code:'BEL',name:'Belgium',flag:'🇧🇪',group:'G'},{code:'IRN',name:'Iran',flag:'🇮🇷',group:'G'},{code:'EGY',name:'Egypt',flag:'🇪🇬',group:'G'},{code:'NZL',name:'New Zealand',flag:'🇳🇿',group:'G'},
+    {code:'ESP',name:'Spain',flag:'🇪🇸',group:'H'},{code:'URU',name:'Uruguay',flag:'🇺🇾',group:'H'},{code:'KSA',name:'Saudi Arabia',flag:'🇸🇦',group:'H'},{code:'CPV',name:'Cape Verde',flag:'🇨🇻',group:'H'},
+    {code:'FRA',name:'France',flag:'🇫🇷',group:'I'},{code:'SEN',name:'Senegal',flag:'🇸🇳',group:'I'},{code:'NOR',name:'Norway',flag:'🇳🇴',group:'I'},{code:'IRQ',name:'Iraq',flag:'🇮🇶',group:'I'},
+    {code:'ARG',name:'Argentina',flag:'🇦🇷',group:'J'},{code:'ALG',name:'Algeria',flag:'🇩🇿',group:'J'},{code:'AUT',name:'Austria',flag:'🇦🇹',group:'J'},{code:'JOR',name:'Jordan',flag:'🇯🇴',group:'J'},
+    {code:'POR',name:'Portugal',flag:'🇵🇹',group:'K'},{code:'COL',name:'Colombia',flag:'🇨🇴',group:'K'},{code:'UZB',name:'Uzbekistan',flag:'🇺🇿',group:'K'},{code:'COD',name:'DR Congo',flag:'🇨🇩',group:'K'},
+    {code:'ENG',name:'England',flag:'🏴',group:'L'},{code:'CRO',name:'Croatia',flag:'🇭🇷',group:'L'},{code:'GHA',name:'Ghana',flag:'🇬🇭',group:'L'},{code:'PAN',name:'Panama',flag:'🇵🇦',group:'L'},
+    {code:'FWC',name:'Special / Intro / Museum',flag:'🏆',group:'S'}
+  ];
+  const TEAM_BY_CODE = Object.fromEntries(TEAMS.map(t=>[t.code,t]));
+  const VALID_LIST = TEAMS.map(t=>t.code);
 
-let collection = JSON.parse(localStorage.getItem('panini_collection')||'{}');
+  function numRange(code){ return code==='FWC' ? [0,19] : [1,20]; }
+  function isValidSticker(code,num){ if(code==='FWC') return num>=0 && num<=19; return num>=1 && num<=20; }
 
-function switchTab(pageId, tabEl){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(pageId)?.classList.add('active');
-  tabEl?.classList.add('active');
-  if(pageId==='pageScan') startCamera(); else stopCamera();
-  if(pageId==='pageCollection') renderCollectionList();
-  if(pageId==='pageStats') renderStats();
-}
-window.switchTab = switchTab;
+  // ---------------- Firebase init ----------------
+  const fbApp = initializeApp(firebaseConfig);
+  const auth = getAuth(fbApp);
+  const db = getFirestore(fbApp);
 
-function saveCollection(){ localStorage.setItem('panini_collection', JSON.stringify(collection)); }
-function getOwnedUnique(){ return Object.keys(collection).filter(k=>(collection[k]||0)>0).length; }
-function getDupCount(){ return Object.keys(collection).reduce((s,k)=>s+Math.max(0,(collection[k]||0)-1),0); }
+  // ---------------- Local + Cloud state ----------------
+  let collection = JSON.parse(localStorage.getItem('panini_collection')||'{}');
+  let currentUser = null;
+  let profile = null; // {displayName, collectorClass}
+  let cloudDupKeys = []; // last known on cloud
 
-function updateHeader(){
-  const owned=getOwnedUnique();
-  const pct=Math.round(owned/TOTAL_STICKERS*100);
-  document.getElementById('headerProgress').style.width=pct+'%';
-  document.getElementById('headerProgressText').textContent = owned + ' / ' + TOTAL_STICKERS + ' stickers (' + pct + '%)';
-}
+  function saveLocal(){ localStorage.setItem('panini_collection', JSON.stringify(collection)); }
+  function nowISO(){ return new Date().toISOString(); }
 
-function renderStats(){
-  const owned=getOwnedUnique();
-  const dups=getDupCount();
-  document.getElementById('statOwned').textContent=owned;
-  document.getElementById('statMissing').textContent=TOTAL_STICKERS-owned;
-  document.getElementById('statDup').textContent=dups;
-}
+  // ---------------- PWA SW ----------------
+  if('serviceWorker' in navigator){ window.addEventListener('load', ()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{})); }
 
-function renderCollectionList(){
-  const list=document.getElementById('collectionList');
-  const keys=Object.keys(collection).filter(k=collection[k]>0).sort();
-  if(!keys.length){ list.innerHTML='<div class="row"><div><b>No stickers yet</b><br><small>Scan or add manually</small></div><div>🙂</div></div>'; return; }
-  list.innerHTML = keys.map(k=>{
-    const parts=k.split('-');
-    const code=parts[0];
-    const num=parts[1];
-    const team = TEAM_BY_CODE[code];
-    const c = collection[k];
-    const color = c>1 ? 'var(--orange)' : 'var(--green)';
-    return '<div class="row"><div><b>'+(team?team.flag+' '+team.code:code)+' '+num+'</b><br><small>'+(team?team.name:code)+'</small></div><div style="font-weight:1200;color:'+color+'">x'+c+'</div></div>';
-  }).join('');
-}
+  // ---------------- Auth UI ----------------
+  function showAuth(show){ document.getElementById('authOverlay')?.classList.toggle('show', !!show); }
+  function setAuthError(msg){ const el=document.getElementById('authError'); if(el) el.textContent = msg || ''; }
 
-function showFeedback(code,num,isNew,count){
-  const team=TEAM_BY_CODE[code];
-  const overlay=document.getElementById('feedbackOverlay');
-  const card=document.getElementById('feedbackCard');
-  const emoji=document.getElementById('feedbackEmoji');
-  const title=document.getElementById('feedbackTitle');
-  const sub=document.getElementById('feedbackSub');
-  card.className='feedback-card '+(isNew?'new-card':'dup-card');
-  emoji.textContent=isNew?'🆕':'⚠️';
-  title.textContent=isNew?'NEW STICKER!':('DUPLICATE (x'+count+')');
-  title.style.color=isNew?'var(--green)':'var(--orange)';
-  sub.textContent=(team?team.flag+' '+team.name:code)+' #'+num;
-  overlay.classList.add('show');
-  setTimeout(()=>overlay.classList.remove('show'), 1200);
-}
-
-function addSticker(code,num){
-  const key=code+'-'+num;
-  collection[key]=(collection[key]||0)+1;
-  saveCollection();
-  updateHeader();
-  updateNumberGrid();
-  showFeedback(code,num,(collection[key]===1),collection[key]);
-}
-window.addSticker = addSticker;
-
-// Manual entry
-let selectedCode=null;
-const countrySearch=document.getElementById('countrySearch');
-const countryList=document.getElementById('countryList');
-const selectedTeamEl=document.getElementById('selectedTeam');
-
-function updateNumberGrid(){
-  const grid=document.getElementById('numberGrid');
-  if(!selectedCode){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;font-size:13px;font-weight:1000">Select a team first ↑</div>';
-    return;
-  }
-  const rng=numRange(selectedCode);
-  const minNum=rng[0], maxNum=rng[1];
-  let html='';
-  for(let i=minNum;i<=maxNum;i++){
-    const key=selectedCode+'-'+i;
-    const owned=(collection[key]||0)>0;
-    html += '<div class="num-btn '+(owned?'owned':'')+'" onclick="addSticker(\''+selectedCode+'\','+i+')">'+i+'</div>';
-  }
-  grid.innerHTML=html;
-}
-
-function clearSelectedTeam(){
-  selectedCode=null;
-  countrySearch.value='';
-  countryList.classList.remove('show');
-  selectedTeamEl.classList.remove('show');
-  selectedTeamEl.textContent='';
-  updateNumberGrid();
-  countrySearch.focus();
-}
-window.clearSelectedTeam = clearSelectedTeam;
-
-countrySearch.addEventListener('input', function(){
-  const q=(this.value||'').toLowerCase();
-  if(!q){ countryList.classList.remove('show'); return; }
-  const matches=TEAMS.filter(t=>t.name.toLowerCase().includes(q)||t.code.toLowerCase().includes(q));
-  if(!matches.length){ countryList.classList.remove('show'); return; }
-  countryList.innerHTML=matches.map(t=>
-    '<div class="country-item" onclick="selectTeam(\''+t.code+'\')">'+t.flag+' <span>'+t.name+'</span> <span class="code">'+t.code+'</span></div>'
-  ).join('');
-  countryList.classList.add('show');
-});
-
-document.addEventListener('click', function(e){ if(!e.target.closest('.manual')) countryList.classList.remove('show'); });
-
-function selectTeam(code){
-  selectedCode=code;
-  const team=TEAM_BY_CODE[code];
-  countrySearch.value = team.flag + ' ' + team.name + ' (' + team.code + ')';
-  countryList.classList.remove('show');
-  selectedTeamEl.textContent = team.flag + ' ' + team.name + ' — tap a number';
-  selectedTeamEl.classList.add('show');
-  updateNumberGrid();
-}
-window.selectTeam = selectTeam;
-
-function exportJSON(){
-  const payload={version:APP_VERSION, exportedAt:new Date().toISOString(), collection:collection};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='panini_wc2026_collection.json';
-  a.click();
-}
-window.exportJSON = exportJSON;
-
-// ROI Guides
-function layoutGuides(){
-  const container=document.getElementById('cameraContainer');
-  const sticker=document.getElementById('stickerGuide');
-  const code=document.getElementById('codeGuide');
-  if(!container||!sticker||!code) return;
-  const cw=container.clientWidth, ch=container.clientHeight;
-  if(cw<10||ch<10) return;
-
-  const maxW=cw*0.92, maxH=ch*0.92;
-  let sw=maxW;
-  let sh=sw / STICKER_AR;
-  if(sh>maxH){ sh=maxH; sw=sh*STICKER_AR; }
-  const left=(cw-sw)/2;
-  const top=(ch-sh)/2;
-  sticker.style.left=left+'px'; sticker.style.top=top+'px'; sticker.style.width=sw+'px'; sticker.style.height=sh+'px';
-
-  const cx = left + sw*LABEL_RX;
-  const cy = top  + sh*LABEL_RY;
-  const cW = sw*LABEL_RW;
-  const cH = sh*LABEL_RH;
-  code.style.left=cx+'px'; code.style.top=cy+'px'; code.style.width=cW+'px'; code.style.height=cH+'px';
-}
-window.addEventListener('resize', layoutGuides);
-
-// Camera + OCR
-const videoEl=document.getElementById('cameraFeed');
-const statusEl=document.getElementById('scanStatus');
-const debugEl=document.getElementById('debugLine');
-let cameraStream=null;
-let worker=null;
-let workerReady=false;
-let ocrBusy=false;
-let autoOn=true;
-let stableHits=0;
-let lastKey=null;
-let scanning=false;
-let rafId=null;
-let lastScanTs=0;
-let scanEveryMs=900;
-let prevSig=null;
-
-function updateStability(){
-  const n=parseInt(document.getElementById('stability').value,10);
-  document.getElementById('stabilityLabel').textContent=n+' hits';
-  document.getElementById('autoHint').textContent='stabilize '+n+' hits';
-}
-window.updateStability=updateStability;
-updateStability();
-
-async function initWorker(){
-  if(workerReady) return;
-  worker = await Tesseract.createWorker('eng');
-  await worker.setParameters({
-    tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
-    preserve_interword_spaces:'1',
-    tessedit_pageseg_mode:'7',
-    load_system_dawg:'0',
-    load_freq_dawg:'0'
-  });
-  workerReady=true;
-}
-
-function normalizeForDigits(s){
-  return (s||'').toUpperCase().replace(/O/g,'0').replace(/[IL]/g,'1').replace(/S/g,'5').replace(/B/g,'8');
-}
-
-function extractCandidate(text){
-  const raw=(text||'').toUpperCase();
-  let cleaned = raw.replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim();
-  cleaned = cleaned.replace(/FCW/g,'FWC');
-  for(const code of VALID_LIST){
-    const re = new RegExp('\\b'+code+'\\s*([0-9]{1,2})\\b');
-    const m = cleaned.match(re);
-    if(m){
-      const num = parseInt(normalizeForDigits(m[1]),10);
-      if(Number.isFinite(num) && isValidSticker(code,num)) return {code:code,num:num,raw:cleaned};
-    }
-  }
-  const compact = cleaned.replace(/\s+/g,'');
-  for(const code of VALID_LIST){
-    const re = new RegExp(code+'([0-9]{1,2})');
-    const m = compact.match(re);
-    if(m){
-      const num = parseInt(normalizeForDigits(m[1]),10);
-      if(Number.isFinite(num) && isValidSticker(code,num)) return {code:code,num:num,raw:compact};
-    }
-  }
-  return null;
-}
-
-function downsampleSignature(ctx,w,h){
-  const tw=18, th=10;
-  const img=ctx.getImageData(0,0,w,h).data;
-  let sig=new Array(tw*th);
-  for(let yy=0; yy<th; yy++){
-    for(let xx=0; xx<tw; xx++){
-      const sx=Math.floor((xx+0.5)*w/tw);
-      const sy=Math.floor((yy+0.5)*h/th);
-      const idx=(sy*w+sx)*4;
-      sig[yy*tw+xx]=0.299*img[idx]+0.587*img[idx+1]+0.114*img[idx+2];
-    }
-  }
-  return sig;
-}
-function diffSig(a,b){ if(!a||!b) return 999; let s=0; for(let i=0;i<a.length;i++) s+=Math.abs(a[i]-b[i]); return s/a.length; }
-
-function preprocessLabel(ctx,w,h){
-  const img=ctx.getImageData(0,0,w,h);
-  const d=img.data;
-  let sum=0;
-  for(let i=0;i<d.length;i+=4){
-    const g = 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
-    const inv = 255-g;
-    d[i]=d[i+1]=d[i+2]=inv;
-    sum += inv;
-  }
-  const mean = sum/(d.length/4);
-  const thresh = Math.max(90, Math.min(180, mean*0.92));
-  for(let i=0;i<d.length;i+=4){
-    const v=d[i];
-    const b = v>thresh ? 255 : 0;
-    d[i]=d[i+1]=d[i+2]=b;
-  }
-  ctx.putImageData(img,0,0);
-}
-
-function getCropRectFromGuide(padFactor){
-  const guide=document.getElementById('codeGuide');
-  const container=document.getElementById('cameraContainer');
-  if(!guide||!container||!videoEl.videoWidth) return null;
-
-  const cRect=container.getBoundingClientRect();
-  const gRect=guide.getBoundingClientRect();
-  const gx=gRect.left - cRect.left;
-  const gy=gRect.top  - cRect.top;
-  const gw=gRect.width;
-  const gh=gRect.height;
-
-  const vW=videoEl.videoWidth;
-  const vH=videoEl.videoHeight;
-  const dispW=cRect.width;
-  const dispH=cRect.height;
-
-  const scale=Math.max(dispW/vW, dispH/vH);
-  const scaledW=vW*scale;
-  const scaledH=vH*scale;
-  const offsetX=(dispW - scaledW)/2;
-  const offsetY=(dispH - scaledH)/2;
-
-  const pad=Math.min(gw,gh)*(padFactor||0);
-  const rx=gx-pad, ry=gy-pad, rw=gw+pad*2, rh=gh+pad*2;
-
-  let sx=(rx - offsetX)/scale;
-  let sy=(ry - offsetY)/scale;
-  let sw=rw/scale;
-  let sh=rh/scale;
-
-  sx=Math.max(0, Math.min(vW-1, sx));
-  sy=Math.max(0, Math.min(vH-1, sy));
-  sw=Math.max(1, Math.min(vW-sx, sw));
-  sh=Math.max(1, Math.min(vH-sy, sh));
-  return {sx:sx, sy:sy, sw:sw, sh:sh};
-}
-
-async function ocrAttempt(padFactor){
-  if(!workerReady || ocrBusy) return null;
-  const rect=getCropRectFromGuide(padFactor);
-  if(!rect) return null;
-
-  const cropCanvas=document.getElementById('cropCanvas');
-  const targetW=520;
-  const scale=targetW/rect.sw;
-  cropCanvas.width=targetW;
-  cropCanvas.height=Math.max(120, Math.floor(rect.sh*scale));
-  const cctx=cropCanvas.getContext('2d',{willReadFrequently:true});
-  cctx.imageSmoothingEnabled=true;
-  cctx.drawImage(videoEl, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, cropCanvas.width, cropCanvas.height);
-
-  const sig=downsampleSignature(cctx,cropCanvas.width,cropCanvas.height);
-  const motion=diffSig(sig, prevSig);
-  prevSig=sig;
-  if(motion>25) return {skipped:true,motion:motion};
-
-  preprocessLabel(cctx,cropCanvas.width,cropCanvas.height);
-
-  ocrBusy=true;
-  try{
-    const res=await worker.recognize(cropCanvas);
-    const txt=(res.data && res.data.text) ? res.data.text : '';
-    const conf=(res.data && typeof res.data.confidence==='number') ? res.data.confidence : 0;
-    return {text:txt, confidence:conf, pad:padFactor};
-  } finally { ocrBusy=false; }
-}
-
-async function ocrMulti(){
-  const pads=[0.00, 0.18, 0.32];
-  let last=null;
-  for(const p of pads){
-    const out=await ocrAttempt(p);
-    if(!out) continue;
-    last=out;
-    if(out.skipped) return out;
-    const cand=extractCandidate(out.text);
-    if(cand) return Object.assign({}, out, {cand:cand});
-  }
-  return last;
-}
-
-function showConfirm(code,num,confidence){
-  const modal=document.getElementById('confirmModal');
-  const sel=document.getElementById('confirmCountry');
-  sel.innerHTML=TEAMS.map(t=>'<option value="'+t.code+'" '+(t.code===code?'selected':'')+'>'+t.flag+' '+t.code+'</option>').join('');
-  document.getElementById('confirmNumber').value=num;
-  document.getElementById('confirmDetected').textContent=code+' '+num;
-  document.getElementById('confirmConfidence').textContent='OCR confidence: '+Math.round(confidence||0)+'%';
-  modal.classList.add('show');
-}
-function closeConfirm(){ document.getElementById('confirmModal').classList.remove('show'); }
-window.closeConfirm=closeConfirm;
-function confirmSticker(){
-  const code=document.getElementById('confirmCountry').value;
-  const num=parseInt(document.getElementById('confirmNumber').value,10);
-  if(code && isValidSticker(code,num)){ addSticker(code,num); closeConfirm(); }
-}
-window.confirmSticker=confirmSticker;
-
-function toggleAuto(){
-  autoOn=!autoOn;
-  document.getElementById('autoSwitch').classList.toggle('on', autoOn);
-  document.getElementById('autoState').textContent=autoOn?'ON':'OFF';
-  if(autoOn){ stableHits=0; lastKey=null; startLoop(); }
-  else { stopLoop(); statusEl.textContent='Auto-scan OFF. Use manual entry.'; }
-}
-window.toggleAuto=toggleAuto;
-
-async function toggleTorch(){
-  const sw=document.getElementById('torchSwitch');
-  if(!cameraStream) return;
-  const track=cameraStream.getVideoTracks()[0];
-  const caps=track.getCapabilities ? track.getCapabilities() : {};
-  if(!caps.torch){ document.getElementById('torchHint').textContent='not supported'; return; }
-  const turningOn=!sw.classList.contains('on');
-  try{
-    await track.applyConstraints({advanced:[{torch: turningOn}]});
-    sw.classList.toggle('on', turningOn);
-    document.getElementById('torchState').textContent = turningOn ? 'ON' : 'OFF';
-  }catch(e){ document.getElementById('torchHint').textContent='failed'; }
-}
-window.toggleTorch=toggleTorch;
-
-async function startCamera(){
-  if(cameraStream) return;
-  try{
-    statusEl.textContent='Requesting camera…';
-    cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:false});
-    videoEl.srcObject=cameraStream;
-    statusEl.textContent='Loading OCR… (first time only)';
-    await new Promise(r=>videoEl.onloadedmetadata=r);
-    layoutGuides();
-    await initWorker();
-    statusEl.textContent='Ready. Keep code inside dashed box.';
-    startLoop();
-  }catch(e){
-    statusEl.textContent='⚠️ Camera not available. Use HTTPS and allow camera permission.';
-  }
-}
-
-function stopCamera(){
-  stopLoop();
-  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
-  videoEl.srcObject=null;
-}
-
-function startLoop(){
-  if(scanning || !autoOn) return;
-  scanning=true;
-  lastScanTs=0;
-  const loop=async (ts)=>{
-    if(!scanning) return;
-    if(ts-lastScanTs<scanEveryMs){ rafId=requestAnimationFrame(loop); return; }
-    lastScanTs=ts;
-
-    if(document.getElementById('confirmModal').classList.contains('show') ||
-       document.getElementById('feedbackOverlay').classList.contains('show')){ rafId=requestAnimationFrame(loop); return; }
-
-    try{
-      const out=await ocrMulti();
-      if(out && out.skipped){
-        statusEl.textContent='Hold steady… (motion detected)';
-        debugEl.textContent='';
-        stableHits=0; lastKey=null;
-      } else if(out && out.text){
-        const cand = out.cand || extractCandidate(out.text);
-        const cleaned = (cand?cand.raw:out.text.toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,22));
-        debugEl.textContent='OCR(pad '+Math.round((out.pad||0)*100)+'%): '+cleaned+' · '+Math.round(out.confidence||0)+'%';
-        if(cand){
-          const key=cand.code+'-'+cand.num;
-          statusEl.textContent='Detected: '+cand.code+' '+cand.num+' (stabilizing…)';
-          if(key===lastKey) stableHits++; else {stableHits=1; lastKey=key;}
-          const need=parseInt(document.getElementById('stability').value,10);
-          if(stableHits>=need){ stableHits=0; lastKey=null; showConfirm(cand.code,cand.num,out.confidence); }
-        } else {
-          statusEl.textContent='Searching… keep code inside dashed box.';
-          stableHits=0; lastKey=null;
-        }
-      }
-    }catch(err){
-      statusEl.textContent='OCR busy…';
-    }
-
-    rafId=requestAnimationFrame(loop);
+  window.authLogin = async function(){
+    setAuthError('');
+    const email=(document.getElementById('authEmail').value||'').trim();
+    const password=document.getElementById('authPassword').value||'';
+    try{ await signInWithEmailAndPassword(auth, email, password); }
+    catch(e){ setAuthError(e.message||String(e)); }
   };
-  rafId=requestAnimationFrame(loop);
-}
 
-function stopLoop(){ scanning=false; if(rafId) cancelAnimationFrame(rafId); rafId=null; }
+  window.authSignup = async function(){
+    setAuthError('');
+    const email=(document.getElementById('authEmail').value||'').trim();
+    const password=document.getElementById('authPassword').value||'';
+    const displayName=(document.getElementById('authName').value||'').trim();
+    const collectorClass=(document.getElementById('authClass').value||'').trim();
+    try{
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+      const ref = doc(db,'users',uid);
+      await setDoc(ref, { email, displayName, collectorClass, createdAt: nowISO(), updatedAt: nowISO(), collection: {} , dupKeys: [] }, {merge:true});
+    } catch(e){ setAuthError(e.message||String(e)); }
+  };
 
-// Startup
+  async function doLogout(){ await signOut(auth); }
 
-// PWA
-if('serviceWorker' in navigator){ window.addEventListener('load', ()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{})); }
-updateHeader();
-updateNumberGrid();
-renderStats();
-layoutGuides();
+  function updateUserPill(){
+    const pill=document.getElementById('userPill');
+    if(!pill) return;
+    if(!currentUser){ pill.style.display='none'; pill.innerHTML=''; return; }
+    pill.style.display='inline-flex';
+    const name = profile?.displayName ? profile.displayName : (currentUser.email||'user');
+    const cls = profile?.collectorClass ? (' · '+profile.collectorClass) : '';
+    pill.innerHTML = `✅ ${name}${cls} <button id="logoutBtn">Logout</button>`;
+    document.getElementById('logoutBtn').onclick = ()=>doLogout();
+  }
+
+  async function loadFromCloud(uid){
+    const ref = doc(db,'users',uid);
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      const data = snap.data();
+      profile = { displayName: data.displayName||'', collectorClass: data.collectorClass||'' };
+      cloudDupKeys = Array.isArray(data.dupKeys) ? data.dupKeys : [];
+      if(data.collection && typeof data.collection==='object'){
+        collection = data.collection;
+        saveLocal();
+      }
+    } else {
+      profile = { displayName:'', collectorClass:'' };
+      cloudDupKeys = [];
+      await setDoc(ref, { email: currentUser.email||'', displayName:'', collectorClass:'', createdAt: nowISO(), updatedAt: nowISO(), collection, dupKeys: [] }, {merge:true});
+    }
+  }
+
+  onAuthStateChanged(auth, async (user)=>{
+    currentUser = user || null;
+    if(!currentUser){
+      profile = null;
+      showAuth(true);
+      updateUserPill();
+      initUI();
+      return;
+    }
+    showAuth(false);
+    await loadFromCloud(currentUser.uid);
+    updateUserPill();
+    initUI();
+  });
+
+  // ---------------- Stats + header ----------------
+  function getOwnedUnique(){ return Object.keys(collection).filter(k=>(collection[k]||0)>0).length; }
+  function getDupCount(){ return Object.keys(collection).reduce((s,k)=>s+Math.max(0,(collection[k]||0)-1),0); }
+
+  function updateHeader(){
+    const owned=getOwnedUnique();
+    const pct=Math.round(owned/TOTAL_STICKERS*100);
+    document.getElementById('headerProgress').style.width=pct+'%';
+    document.getElementById('headerProgressText').textContent = `${owned} / ${TOTAL_STICKERS} stickers (${pct}%)`;
+    document.getElementById('appVersion').textContent = APP_VERSION;
+  }
+
+  function renderStats(){
+    const owned=getOwnedUnique();
+    const dups=getDupCount();
+    document.getElementById('statOwned').textContent=owned;
+    document.getElementById('statMissing').textContent=TOTAL_STICKERS-owned;
+    document.getElementById('statDup').textContent=dups;
+  }
+
+  // ---------------- Collection rendering ----------------
+  function renderCollectionList(){
+    const list=document.getElementById('collectionList');
+    const keys=Object.keys(collection).filter(k=collection[k]>0).sort();
+    if(!keys.length){
+      list.innerHTML='<div class="row"><div><b>No stickers yet</b><br><small>Scan or add manually</small></div><div>🙂</div></div>';
+      return;
+    }
+    list.innerHTML = keys.map(k=>{
+      const [code,num] = k.split('-');
+      const team = TEAM_BY_CODE[code];
+      const c = collection[k];
+      const color = c>1 ? 'var(--orange)' : 'var(--green)';
+      return `<div class="row"><div><b>${team?team.flag+' '+team.code:code} ${num}</b><br><small>${team?team.name:code}</small></div><div style="font-weight:1200;color:${color}">x${c}</div></div>`;
+    }).join('');
+  }
+
+  // ---------------- Manual entry ----------------
+  let selectedCode=null;
+  const countrySearch=document.getElementById('countrySearch');
+  const countryList=document.getElementById('countryList');
+  const selectedTeamEl=document.getElementById('selectedTeam');
+
+  function updateNumberGrid(){
+    const grid=document.getElementById('numberGrid');
+    if(!selectedCode){
+      grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;font-size:13px;font-weight:1000">Select a team first ↑</div>';
+      return;
+    }
+    const [minNum,maxNum]=numRange(selectedCode);
+    let html='';
+    for(let i=minNum;i<=maxNum;i++){
+      const key=selectedCode+'-'+i;
+      const owned=(collection[key]||0)>0;
+      html += `<div class="num-btn ${owned?'owned':''}" onclick="addSticker('${selectedCode}',${i})">${i}</div>`;
+    }
+    grid.innerHTML=html;
+  }
+
+  window.clearSelectedTeam = function(){
+    selectedCode=null;
+    countrySearch.value='';
+    countryList.classList.remove('show');
+    selectedTeamEl.classList.remove('show');
+    selectedTeamEl.textContent='';
+    updateNumberGrid();
+    countrySearch.focus();
+  };
+
+  countrySearch.addEventListener('input', function(){
+    const q=(this.value||'').toLowerCase();
+    if(!q){ countryList.classList.remove('show'); return; }
+    const matches=TEAMS.filter(t=>t.name.toLowerCase().includes(q)||t.code.toLowerCase().includes(q));
+    if(!matches.length){ countryList.classList.remove('show'); return; }
+    countryList.innerHTML=matches.map(t=>
+      `<div class="country-item" onclick="selectTeam('${t.code}')">${t.flag} <span>${t.name}</span> <span class="code">${t.code}</span></div>`
+    ).join('');
+    countryList.classList.add('show');
+  });
+  document.addEventListener('click', (e)=>{ if(!e.target.closest('.manual')) countryList.classList.remove('show'); });
+
+  window.selectTeam = function(code){
+    selectedCode=code;
+    const team=TEAM_BY_CODE[code];
+    countrySearch.value = `${team.flag} ${team.name} (${team.code})`;
+    countryList.classList.remove('show');
+    selectedTeamEl.textContent = `${team.flag} ${team.name} — tap a number`;
+    selectedTeamEl.classList.add('show');
+    updateNumberGrid();
+  };
+
+  // ---------------- Sticker add + feedback + cloud sync ----------------
+  function showFeedback(code,num,isNew,count){
+    const team=TEAM_BY_CODE[code];
+    const overlay=document.getElementById('feedbackOverlay');
+    const card=document.getElementById('feedbackCard');
+    const emoji=document.getElementById('feedbackEmoji');
+    const title=document.getElementById('feedbackTitle');
+    const sub=document.getElementById('feedbackSub');
+    card.className='feedback-card '+(isNew?'new-card':'dup-card');
+    emoji.textContent=isNew?'🆕':'⚠️';
+    title.textContent=isNew?'NEW STICKER!':('DUPLICATE (x'+count+')');
+    title.style.color=isNew?'var(--green)':'var(--orange)';
+    sub.textContent=(team?team.flag+' '+team.name:code)+' #'+num;
+    overlay.classList.add('show');
+    setTimeout(()=>overlay.classList.remove('show'), 1200);
+  }
+
+  async function syncToCloud(){
+    if(!currentUser) return;
+    const uid=currentUser.uid;
+    // update user doc
+    await setDoc(doc(db,'users',uid), { updatedAt: nowISO(), collection }, {merge:true});
+    await syncDupOffers();
+  }
+
+  async function syncDupOffers(){
+    if(!currentUser) return;
+    const uid=currentUser.uid;
+    const displayName = profile?.displayName || (currentUser.email||'');
+    const collectorClass = profile?.collectorClass || '';
+
+    const newDupKeys = Object.keys(collection).filter(k => (collection[k]||0) > 1).sort();
+    const toDelete = cloudDupKeys.filter(k => !newDupKeys.includes(k));
+    const toUpsert = newDupKeys;
+
+    const batch = writeBatch(db);
+    // delete removed
+    for(const key of toDelete){
+      const id = uid + '_' + key;
+      batch.delete(doc(db,'dupOffers', id));
+    }
+    // upsert current
+    for(const key of toUpsert){
+      const id = uid + '_' + key;
+      batch.set(doc(db,'dupOffers', id), {
+        uid, displayName, collectorClass,
+        stickerKey: key,
+        count: collection[key]||2,
+        updatedAt: nowISO()
+      }, {merge:true});
+    }
+    await batch.commit();
+    cloudDupKeys = newDupKeys;
+    await setDoc(doc(db,'users',uid), { dupKeys: newDupKeys, updatedAt: nowISO() }, {merge:true});
+  }
+
+  window.addSticker = async function(code,num){
+    const key=code+'-'+num;
+    collection[key]=(collection[key]||0)+1;
+    saveLocal();
+    updateHeader();
+    updateNumberGrid();
+    renderStats();
+    showFeedback(code,num,(collection[key]===1),collection[key]);
+    // fire and forget (still awaited sequentially)
+    try{ await syncToCloud(); }catch(e){}
+  };
+
+  // ---------------- Trade matching ----------------
+  function allStickerKeys(){
+    const out=[];
+    for(const t of TEAMS){
+      const [minN,maxN]=numRange(t.code);
+      for(let n=minN;n<=maxN;n++) out.push(t.code+'-'+n);
+    }
+    return out;
+  }
+
+  window.findTraders = async function(){
+    const outEl=document.getElementById('traderResults');
+    if(!currentUser){ outEl.innerHTML='<div class="row"><div><b>Sign in required</b><br><small>Create an account to see traders</small></div><div>🔒</div></div>'; return; }
+
+    outEl.innerHTML='<div class="row"><div><b>Searching…</b><br><small>Looking for users with duplicates of your missing stickers</small></div><div>⏳</div></div>';
+
+    // missing list
+    const missing = allStickerKeys().filter(k => !(collection[k] && collection[k] > 0));
+    // Firestore where-in supports 10 items per query
+    const chunks=[];
+    for(let i=0;i<missing.length;i+=10) chunks.push(missing.slice(i,i+10));
+
+    const offers=[];
+    // Limit parallelism to avoid bursts
+    const maxPar=6;
+    for(let i=0;i<chunks.length;i+=maxPar){
+      const slice = chunks.slice(i,i+maxPar);
+      const res = await Promise.all(slice.map(async (keys)=>{
+        const qy = query(fsCollection(db,'dupOffers'), where('stickerKey','in', keys));
+        const snap = await getDocs(qy);
+        return snap.docs.map(d=>d.data());
+      }));
+      res.flat().forEach(x=>offers.push(x));
+    }
+
+    // group by user
+    const byUser = new Map();
+    for(const o of offers){
+      if(o.uid === currentUser.uid) continue;
+      const entry = byUser.get(o.uid) || { uid:o.uid, name:o.displayName||'Collector', cls:o.collectorClass||'', matches:0, items:[] };
+      entry.matches += 1;
+      entry.items.push({ key:o.stickerKey, count:o.count||2 });
+      byUser.set(o.uid, entry);
+    }
+
+    const arr = Array.from(byUser.values()).sort((a,b)=>b.matches-a.matches).slice(0,20);
+    if(!arr.length){
+      outEl.innerHTML='<div class="row"><div><b>No matches yet</b><br><small>No other users published duplicates of your missing stickers.</small></div><div>🤷</div></div>';
+      return;
+    }
+
+    outEl.innerHTML = arr.map(u=>{
+      const top = u.items.slice(0,6).map(it=>it.key.replace('-', ' ')+' x'+it.count).join(', ');
+      const cls = u.cls ? ('<br><small>'+u.cls+'</small>') : '';
+      return `<div class="row"><div><b>${u.name}</b>${cls}<br><small>${u.matches} matching duplicates</small><br><small>${top}${u.items.length>6?'…':''}</small></div><div>🤝</div></div>`;
+    }).join('');
+  };
+
+  // ---------------- ROI guides (frame + label box) ----------------
+  function layoutGuides(){
+    const container=document.getElementById('cameraContainer');
+    const sticker=document.getElementById('stickerGuide');
+    const code=document.getElementById('codeGuide');
+    if(!container||!sticker||!code) return;
+    const cw=container.clientWidth;
+    const ch=container.clientHeight;
+    if(cw<10||ch<10) return;
+
+    // Make sticker guide almost full frame (reduces background) with a tiny inset
+    const inset = Math.max(6, Math.min(cw, ch) * 0.02);
+    const left=inset, top=inset, sw=cw-inset*2, sh=ch-inset*2;
+    sticker.style.left=left+'px'; sticker.style.top=top+'px';
+    sticker.style.width=sw+'px';  sticker.style.height=sh+'px';
+
+    const cx = left + sw*LABEL_RX;
+    const cy = top  + sh*LABEL_RY;
+    const cW = sw*LABEL_RW;
+    const cH = sh*LABEL_RH;
+    code.style.left=cx+'px'; code.style.top=cy+'px';
+    code.style.width=cW+'px'; code.style.height=cH+'px';
+  }
+  window.addEventListener('resize', layoutGuides);
+
+  // ---------------- Camera + OCR ----------------
+  const videoEl=document.getElementById('cameraFeed');
+  const statusEl=document.getElementById('scanStatus');
+  const debugEl=document.getElementById('debugLine');
+  let cameraStream=null;
+
+  let worker=null;
+  let workerReady=false;
+  let ocrBusy=false;
+  let autoOn=true;
+  let stableHits=0;
+  let lastKey=null;
+  let scanning=false;
+  let rafId=null;
+  let lastScanTs=0;
+  let scanEveryMs=900;
+  let prevSig=null;
+  let motionStreak=0;
+
+  window.updateStability = function(){
+    const n=parseInt(document.getElementById('stability').value,10);
+    document.getElementById('stabilityLabel').textContent=n+' hits';
+    document.getElementById('autoHint').textContent='stabilize '+n+' hits';
+  };
+  window.updateStability();
+
+  async function initWorker(){
+    if(workerReady) return;
+    worker = await Tesseract.createWorker('eng');
+    await worker.setParameters({
+      tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
+      preserve_interword_spaces:'1',
+      tessedit_pageseg_mode:'7',
+      load_system_dawg:'0',
+      load_freq_dawg:'0'
+    });
+    workerReady=true;
+  }
+
+  function normalizeForDigits(s){
+    return (s||'').toUpperCase().replace(/O/g,'0').replace(/[IL]/g,'1').replace(/S/g,'5').replace(/B/g,'8');
+  }
+
+  function extractCandidate(text){
+    const raw=(text||'').toUpperCase();
+    let cleaned = raw.replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+    cleaned = cleaned.replace(/FCW/g,'FWC');
+
+    for(const code of VALID_LIST){
+      const re = new RegExp('\\b'+code+'\\s*([0-9]{1,2})\\b');
+      const m = cleaned.match(re);
+      if(m){
+        const num = parseInt(normalizeForDigits(m[1]),10);
+        if(Number.isFinite(num) && isValidSticker(code,num)) return {code, num, raw:cleaned};
+      }
+    }
+    const compact = cleaned.replace(/\s+/g,'');
+    for(const code of VALID_LIST){
+      const re = new RegExp(code+'([0-9]{1,2})');
+      const m = compact.match(re);
+      if(m){
+        const num = parseInt(normalizeForDigits(m[1]),10);
+        if(Number.isFinite(num) && isValidSticker(code,num)) return {code, num, raw:compact};
+      }
+    }
+    return null;
+  }
+
+  function downsampleSignature(ctx,w,h){
+    const tw=18, th=10;
+    const img=ctx.getImageData(0,0,w,h).data;
+    let sig=new Array(tw*th);
+    for(let yy=0; yy<th; yy++){
+      for(let xx=0; xx<tw; xx++){
+        const sx=Math.floor((xx+0.5)*w/tw);
+        const sy=Math.floor((yy+0.5)*h/th);
+        const idx=(sy*w+sx)*4;
+        sig[yy*tw+xx]=0.299*img[idx]+0.587*img[idx+1]+0.114*img[idx+2];
+      }
+    }
+    return sig;
+  }
+  function diffSig(a,b){ if(!a||!b) return 999; let s=0; for(let i=0;i<a.length;i++) s+=Math.abs(a[i]-b[i]); return s/a.length; }
+
+  function preprocessLabel(ctx,w,h){
+    const img=ctx.getImageData(0,0,w,h);
+    const d=img.data;
+    let sum=0;
+    for(let i=0;i<d.length;i+=4){
+      const g = 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+      const inv = 255-g;
+      d[i]=d[i+1]=d[i+2]=inv;
+      sum += inv;
+    }
+    const mean = sum/(d.length/4);
+    const thresh = Math.max(90, Math.min(190, mean*0.92));
+    for(let i=0;i<d.length;i+=4){
+      const v=d[i];
+      const b = v>thresh ? 255 : 0;
+      d[i]=d[i+1]=d[i+2]=b;
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  function getCropRectFromGuide(padFactor){
+    const guide=document.getElementById('codeGuide');
+    const container=document.getElementById('cameraContainer');
+    if(!guide||!container||!videoEl.videoWidth) return null;
+
+    const cRect=container.getBoundingClientRect();
+    const gRect=guide.getBoundingClientRect();
+    const gx=gRect.left - cRect.left;
+    const gy=gRect.top  - cRect.top;
+    const gw=gRect.width;
+    const gh=gRect.height;
+
+    const vW=videoEl.videoWidth;
+    const vH=videoEl.videoHeight;
+    const dispW=cRect.width;
+    const dispH=cRect.height;
+
+    const scale=Math.max(dispW/vW, dispH/vH);
+    const scaledW=vW*scale;
+    const scaledH=vH*scale;
+    const offsetX=(dispW - scaledW)/2;
+    const offsetY=(dispH - scaledH)/2;
+
+    const pad=Math.min(gw,gh)*(padFactor||0);
+    const rx=gx-pad, ry=gy-pad, rw=gw+pad*2, rh=gh+pad*2;
+
+    let sx=(rx - offsetX)/scale;
+    let sy=(ry - offsetY)/scale;
+    let sw=rw/scale;
+    let sh=rh/scale;
+
+    sx=Math.max(0, Math.min(vW-1, sx));
+    sy=Math.max(0, Math.min(vH-1, sy));
+    sw=Math.max(1, Math.min(vW-sx, sw));
+    sh=Math.max(1, Math.min(vH-sy, sh));
+    return {sx, sy, sw, sh};
+  }
+
+  async function ocrAttempt(padFactor){
+    if(!workerReady || ocrBusy) return null;
+    const rect=getCropRectFromGuide(padFactor);
+    if(!rect) return null;
+
+    const cropCanvas=document.getElementById('cropCanvas');
+    const targetW=520;
+    const scale=targetW/rect.sw;
+    cropCanvas.width=targetW;
+    cropCanvas.height=Math.max(120, Math.floor(rect.sh*scale));
+    const cctx=cropCanvas.getContext('2d',{willReadFrequently:true});
+    cctx.imageSmoothingEnabled=true;
+    cctx.drawImage(videoEl, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, cropCanvas.width, cropCanvas.height);
+
+    const sig=downsampleSignature(cctx,cropCanvas.width,cropCanvas.height);
+    const motion=diffSig(sig, prevSig);
+    prevSig=sig;
+
+    // Motion gating: tolerate normal trembling.
+    const THRESH=45;
+    if(motion>THRESH) motionStreak++; else motionStreak=0;
+    if(motionStreak>=2) return {skipped:true,motion};
+
+    preprocessLabel(cctx,cropCanvas.width,cropCanvas.height);
+
+    ocrBusy=true;
+    try{
+      const res=await worker.recognize(cropCanvas);
+      const txt=res.data?.text||'';
+      const conf=typeof res.data?.confidence==='number' ? res.data.confidence : 0;
+      return {text:txt, confidence:conf, pad:padFactor};
+    } finally { ocrBusy=false; }
+  }
+
+  async function ocrMulti(){
+    const pads=[0.00, 0.18, 0.32];
+    let last=null;
+    for(const p of pads){
+      const out=await ocrAttempt(p);
+      if(!out) continue;
+      last=out;
+      if(out.skipped) return out;
+      const cand=extractCandidate(out.text);
+      if(cand) return {...out, cand};
+    }
+    return last;
+  }
+
+  function showConfirm(code,num,confidence){
+    const modal=document.getElementById('confirmModal');
+    const sel=document.getElementById('confirmCountry');
+    sel.innerHTML=TEAMS.map(t=>`<option value="${t.code}" ${t.code===code?'selected':''}>${t.flag} ${t.code}</option>`).join('');
+    document.getElementById('confirmNumber').value=num;
+    document.getElementById('confirmDetected').textContent=code+' '+num;
+    document.getElementById('confirmConfidence').textContent='OCR confidence: '+Math.round(confidence||0)+'%';
+    modal.classList.add('show');
+  }
+  window.closeConfirm = ()=>document.getElementById('confirmModal').classList.remove('show');
+  window.confirmSticker = ()=>{
+    const code=document.getElementById('confirmCountry').value;
+    const num=parseInt(document.getElementById('confirmNumber').value,10);
+    if(code && isValidSticker(code,num)){ window.addSticker(code,num); window.closeConfirm(); }
+  };
+
+  window.toggleAuto = function(){
+    autoOn=!autoOn;
+    document.getElementById('autoSwitch').classList.toggle('on', autoOn);
+    document.getElementById('autoState').textContent=autoOn?'ON':'OFF';
+    if(autoOn){ stableHits=0; lastKey=null; startLoop(); }
+    else { stopLoop(); statusEl.textContent='Auto-scan OFF. Use manual entry.'; }
+  };
+
+  window.toggleTorch = async function(){
+    const sw=document.getElementById('torchSwitch');
+    if(!cameraStream) return;
+    const track=cameraStream.getVideoTracks()[0];
+    const caps=track.getCapabilities ? track.getCapabilities() : {};
+    if(!caps.torch){ document.getElementById('torchHint').textContent='not supported'; return; }
+    const turningOn=!sw.classList.contains('on');
+    try{
+      await track.applyConstraints({advanced:[{torch: turningOn}]});
+      sw.classList.toggle('on', turningOn);
+      document.getElementById('torchState').textContent = turningOn ? 'ON' : 'OFF';
+    }catch(e){ document.getElementById('torchHint').textContent='failed'; }
+  };
+
+  async function startCamera(){
+    if(cameraStream) return;
+    try{
+      statusEl.textContent='Requesting camera…';
+      cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:false});
+      videoEl.srcObject=cameraStream;
+      statusEl.textContent='Loading OCR… (first time only)';
+      await new Promise(r=>videoEl.onloadedmetadata=r);
+      layoutGuides();
+      await initWorker();
+      statusEl.textContent='Ready. Keep code inside dashed box.';
+      startLoop();
+    }catch(e){
+      statusEl.textContent='⚠️ Camera not available. Use HTTPS and allow camera permission.';
+    }
+  }
+
+  function stopCamera(){
+    stopLoop();
+    if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+    videoEl.srcObject=null;
+  }
+
+  function startLoop(){
+    if(scanning || !autoOn) return;
+    scanning=true;
+    lastScanTs=0;
+    const loop=async (ts)=>{
+      if(!scanning) return;
+      if(ts-lastScanTs<scanEveryMs){ rafId=requestAnimationFrame(loop); return; }
+      lastScanTs=ts;
+
+      if(document.getElementById('confirmModal').classList.contains('show') ||
+         document.getElementById('feedbackOverlay').classList.contains('show') ||
+         document.getElementById('authOverlay').classList.contains('show')){ rafId=requestAnimationFrame(loop); return; }
+
+      try{
+        const out=await ocrMulti();
+        if(out?.skipped){
+          statusEl.textContent='Hold steady…';
+          debugEl.textContent='Motion detected (tolerating micro-movements)';
+          stableHits=0; lastKey=null;
+        } else if(out?.text){
+          motionStreak=0;
+          const cand = out.cand || extractCandidate(out.text);
+          const cleaned = (cand?cand.raw:out.text.toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,22));
+          debugEl.textContent=`OCR(pad ${Math.round((out.pad||0)*100)}%): ${cleaned} · ${Math.round(out.confidence||0)}%`;
+          if(cand){
+            const key=cand.code+'-'+cand.num;
+            statusEl.textContent=`Detected: ${cand.code} ${cand.num} (stabilizing…)`;
+            if(key===lastKey) stableHits++; else {stableHits=1; lastKey=key;}
+            const need=parseInt(document.getElementById('stability').value,10);
+            if(stableHits>=need){ stableHits=0; lastKey=null; showConfirm(cand.code,cand.num,out.confidence); }
+          } else {
+            statusEl.textContent='Searching… keep code inside dashed box.';
+            stableHits=0; lastKey=null;
+          }
+        }
+      }catch(err){
+        statusEl.textContent='OCR busy…';
+      }
+
+      rafId=requestAnimationFrame(loop);
+    };
+    rafId=requestAnimationFrame(loop);
+  }
+
+  function stopLoop(){ scanning=false; if(rafId) cancelAnimationFrame(rafId); rafId=null; }
+
+  // ---------------- Navigation ----------------
+  window.switchTab = function(pageId, tabEl){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(pageId)?.classList.add('active');
+    tabEl?.classList.add('active');
+
+    if(pageId==='pageScan') startCamera(); else stopCamera();
+    if(pageId==='pageCollection') renderCollectionList();
+    if(pageId==='pageStats') renderStats();
+  };
+
+  // ---------------- App init ----------------
+  function initUI(){
+    updateHeader();
+    renderStats();
+    renderCollectionList();
+    updateNumberGrid();
+    layoutGuides();
+    // default: camera only when scan tab is active
+    const scanActive = document.getElementById('pageScan').classList.contains('active');
+    if(scanActive) startCamera();
+  }
+
+  // initial local startup
+  initUI();
 </script>
 </body>
 </html>

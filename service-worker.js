@@ -1,9 +1,10 @@
 // Panini WC 2026 Tracker Service Worker
-const CACHE_NAME = 'panini-wc26-v10-roi';
+const CACHE_NAME = 'panini-wc26-v11-roi-firebase';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
+  './firebase-config.js',
   './service-worker.js',
   './icon-192.png',
   './icon-512.png'
