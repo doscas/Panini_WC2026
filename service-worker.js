@@ -1,5 +1,5 @@
 // Panini WC 2026 Tracker Service Worker (Firebase + OCR)
-const CACHE_NAME = 'panini-wc26-v5-firebase';
+const CACHE_NAME = 'panini-wc26-v6-firebase';
 const APP_SHELL = [
   './',
   './index.html',
@@ -29,7 +29,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-  // Network-first for Firebase modules/CDN; cache-first for app shell.
   const url = new URL(req.url);
   const isAppShell = url.origin === self.location.origin;
   if (!isAppShell) {
