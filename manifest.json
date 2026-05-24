@@ -1,12 +1,11 @@
 {
-  "name": "Panini World Cup 2026 Tracker",
+  "name": "Panini WC 2026",
   "short_name": "Panini WC26",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f0f1f",
   "theme_color": "#1a1a2e",
-  "description": "Manual-first sticker tracker with duplicates, reservations, French/English UI, and smart trade suggestions.",
   "icons": [
     {
       "src": "./icon-192.png",
